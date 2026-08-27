@@ -1,5 +1,3 @@
-"""Main entry point for AI PDF Question Answering Tool."""
-
 import sys
 from config import get_api_key
 from pdf_extractor import PDFExtractor

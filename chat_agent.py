@@ -1,5 +1,3 @@
-"""LangChain Gemini Chat Agent module for PDF question answering."""
-
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, AIMessage
 

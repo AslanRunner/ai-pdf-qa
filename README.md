@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Integration-brightgreen.svg)](https://github.com/langchain-ai/langchain)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Powered-orange.svg)](https://aistudio.google.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 ---
 
@@ -113,8 +113,5 @@ To generate a sample `report.pdf` (CS 101 grade roster) for testing:
 python sample_report.py
 ```
 
----
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

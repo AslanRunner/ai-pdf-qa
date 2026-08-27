@@ -1,6 +1,6 @@
-# AI PDF Q&A (ai-pdf-qa)
+# AI Multi-PDF Q&A and Comparison (ai-pdf-qa)
 
-> A modular CLI tool that extracts text from PDF documents and provides multi-turn conversational question answering using **Google Gemini** and **LangChain**.
+> A modular CLI tool that extracts text from multiple PDF documents in a directory and provides comparative question answering, synthesis, and attribution using **Google Gemini** and **LangChain**.
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Integration-brightgreen.svg)](https://github.com/langchain-ai/langchain)
@@ -11,11 +11,12 @@
 
 ## Features
 
-- **Direct Text Extraction**: Reads and extracts text across all pages using `pypdf`.
-- **Full Context Ingestion**: Leverages Gemini's large context window by injecting document text into the system prompt.
-- **Conversational History**: Maintains chat history across questions to support natural follow-up queries.
-- **Modular Architecture**: Clear separation of concerns between PDF parsing, LLM agent logic, configuration, and CLI interaction.
-- **Environment Configuration**: Automatically loads API keys via `.env` with a secure fallback to interactive CLI input.
+- **Multi-Document Ingestion**: Loads all PDF files from a directory and extracts text across all pages using `pypdf`.
+- **Document Labeling & Context Fusion**: Injects each document's text with explicit file markers (`=== filename ===`) into Gemini's system prompt.
+- **Comparative Analysis**: Compares, contrasts, and synthesizes data across multiple documents.
+- **Source Attribution**: Accurately cites which PDF document contains specific findings.
+- **Conversational Memory**: Retains multi-turn conversation history for seamless follow-up questions.
+- **Modular Architecture**: Clean separation between file extraction, AI agent logic, configuration, and the CLI interface.
 
 ---
 
@@ -24,11 +25,13 @@
 ```text
 ai-pdf-qa/
 ├── config.py           # Environment variables and API key management
-├── pdf_extractor.py    # PDF text extraction and document metadata
-├── chat_agent.py       # LangChain Gemini integration and chat history manager
-├── main.py             # Interactive CLI entry point
-├── sample_report.py    # Generates a sample report.pdf for testing
-├── report.pdf          # Sample CS 101 grade report PDF
+├── pdf_extractor.py    # Multi-PDF & directory text extraction module
+├── chat_agent.py       # LangChain Gemini multi-document agent
+├── main.py             # Multi-PDF Q&A CLI entry point
+├── sample_report.py    # Generates sample comparison reports
+├── documents/          # Sample PDF directory for testing
+│   ├── report.pdf      # CS 101 course grade roster
+│   └── report2.pdf     # DS 201 course grade roster
 ├── requirements.txt    # Project dependencies
 ├── .env.example        # Environment variable template
 ├── .gitignore          # Git ignore rules
@@ -74,31 +77,32 @@ python main.py
 ### Example Session
 
 ```text
-=============================
-PDF Question Answering Tool
-=============================
+====================================
+Multi-PDF Question Answering Tool
+====================================
 
-Enter the path to your PDF file: report.pdf
+Enter the directory containing PDFs: documents
 
-Loading PDF...
-[+] Loaded: report.pdf
-  Pages: 1
-  Characters: 577
-[+] Ready for questions!
+Loading PDFs...
+✓ Loaded: report.pdf (1 page, 792 characters)
+✓ Loaded: report2.pdf (1 page, 652 characters)
 
-Ask a question (or 'quit' to exit): What was the grade of Liam Brooks in the CS 101 course?
+✓ Loaded 2 PDFs
+✓ Ready for questions!
 
-Thinking...
-
-Answer:
-Liam Brooks received a grade of **C** in the CS 101 course.
-
-Ask a question (or 'quit' to exit): What was his midterm score?
+Ask a question (or 'quit' to exit): give me the list of students that are in both pdfs
 
 Thinking...
 
 Answer:
-Liam Brooks scored **94.6%** on his midterm exam.
+Based on the grade rosters provided in both documents (**report.pdf** and **report2.pdf**), the following students are enrolled in both courses:
+
+1. **Emma Anderson** (CS 101 in report.pdf, DS 201 in report2.pdf)
+2. **Sophia Carter** (CS 101 in report.pdf, DS 201 in report2.pdf)
+3. **Olivia Evans** (CS 101 in report.pdf, DS 201 in report2.pdf)
+4. **Ava Gomez** (CS 101 in report.pdf, DS 201 in report2.pdf)
+5. **Mia Ibrahim** (CS 101 in report.pdf, DS 201 in report2.pdf)
+6. **Isabella Kim** (CS 101 in report.pdf, DS 201 in report2.pdf)
 
 Ask a question (or 'quit' to exit): quit
 Goodbye!
@@ -108,7 +112,7 @@ Goodbye!
 
 ## Generating Sample Data
 
-To generate a sample `report.pdf` (CS 101 grade roster) for testing:
+To generate sample test documents (`documents/report.pdf` and `documents/report2.pdf`):
 ```bash
 python sample_report.py
 ```

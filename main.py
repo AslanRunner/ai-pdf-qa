@@ -1,4 +1,4 @@
-"""Main entry point for AI PDF Question Answering Tool."""
+"""Main entry point for Multi-PDF Question Answering and Comparison Tool."""
 
 import sys
 from config import get_api_key
@@ -8,44 +8,50 @@ from chat_agent import PDFChatAgent
 
 def print_banner() -> None:
     """Print the application banner."""
-    print("=" * 29)
-    print("PDF Question Answering Tool")
-    print("=" * 29)
+    print("=" * 36)
+    print("Multi-PDF Question Answering Tool")
+    print("=" * 36)
     print()
 
 
-def run_pdf_qa() -> None:
-    """Run the interactive PDF Q&A command line loop."""
+def run_multi_pdf_qa() -> None:
+    """Run the interactive Multi-PDF Q&A and Comparison CLI."""
     print_banner()
 
-    # Step 1: Prompt for PDF file path
+    # Step 1: Prompt for PDF directory or file path
+    documents = []
     while True:
-        pdf_path = input("Enter the path to your PDF file: ").strip().strip('"').strip("'")
-        if not pdf_path:
+        target_path = input("Enter the directory containing PDFs: ").strip().strip('"').strip("'")
+        if not target_path:
             continue
-        if pdf_path.lower() in ("quit", "exit"):
+        if target_path.lower() in ("quit", "exit"):
             print("Goodbye!")
             return
 
-        print("\nLoading PDF...")
+        print("\nLoading PDFs...")
         try:
-            doc = PDFExtractor.extract(pdf_path)
-            print(f"✓ Loaded: {doc.file_path}")
-            print(f"  Pages: {doc.page_count}")
-            print(f"  Characters: {doc.char_count:,}")
+            documents = PDFExtractor.extract_path(target_path)
+            for doc in documents:
+                page_label = "page" if doc.page_count == 1 else "pages"
+                print(f"✓ Loaded: {doc.file_name} ({doc.page_count} {page_label}, {doc.char_count:,} characters)")
+
+            pdf_count_label = "PDF" if len(documents) == 1 else "PDFs"
+            print(f"\n✓ Loaded {len(documents)} {pdf_count_label}")
             print("✓ Ready for questions!\n")
             break
         except FileNotFoundError:
-            print(f"Error: File '{pdf_path}' not found. Please enter a valid path.\n")
+            print(f"Error: Path '{target_path}' not found. Please enter a valid directory.\n")
+        except ValueError as e:
+            print(f"Error: {e}\n")
         except Exception as e:
-            print(f"Error loading PDF: {e}\n")
+            print(f"Error loading PDFs: {e}\n")
 
     # Step 2: Initialize API and Agent
     api_key = get_api_key()
 
     try:
         agent = PDFChatAgent(api_key=api_key)
-        agent.set_document_context(doc.content)
+        agent.set_documents(documents)
     except Exception as e:
         print(f"Failed to initialize AI Agent: {e}")
         sys.exit(1)
@@ -74,4 +80,4 @@ def run_pdf_qa() -> None:
 
 
 if __name__ == "__main__":
-    run_pdf_qa()
+    run_multi_pdf_qa()

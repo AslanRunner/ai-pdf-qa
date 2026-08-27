@@ -1,4 +1,4 @@
-"""PDF text extraction module using pypdf."""
+"""PDF text extraction module supporting single and multi-PDF directory extraction."""
 
 from pathlib import Path
 from typing import NamedTuple
@@ -7,6 +7,7 @@ from pypdf import PdfReader
 
 class PDFDocument(NamedTuple):
     """Holds metadata and extracted text from a PDF file."""
+    file_name: str
     file_path: str
     page_count: int
     char_count: int
@@ -14,11 +15,11 @@ class PDFDocument(NamedTuple):
 
 
 class PDFExtractor:
-    """Handles loading and extracting text from PDF documents."""
+    """Handles loading and extracting text from single or multiple PDF documents."""
 
     @staticmethod
-    def extract(file_path: str | Path) -> PDFDocument:
-        """Extract text and metadata from a PDF file.
+    def extract_file(file_path: str | Path) -> PDFDocument:
+        """Extract text and metadata from a single PDF file.
 
         Args:
             file_path: Path to the PDF file.
@@ -28,7 +29,7 @@ class PDFExtractor:
 
         Raises:
             FileNotFoundError: If the PDF file does not exist.
-            ValueError: If the PDF contains no extractable text.
+            ValueError: If no text could be extracted.
         """
         path = Path(file_path)
         if not path.is_file():
@@ -38,7 +39,7 @@ class PDFExtractor:
         page_count = len(reader.pages)
 
         extracted_pages = []
-        for i, page in enumerate(reader.pages, start=1):
+        for page in reader.pages:
             text = page.extract_text() or ""
             extracted_pages.append(text)
 
@@ -46,13 +47,60 @@ class PDFExtractor:
 
         if not content:
             raise ValueError(
-                "The PDF was loaded successfully, but no text could be extracted. "
+                f"No extractable text found in '{path.name}'. "
                 "It may contain scanned images or be password-protected."
             )
 
         return PDFDocument(
+            file_name=path.name,
             file_path=str(path),
             page_count=page_count,
             char_count=len(content),
-            content=content
+            content=content,
         )
+
+    @classmethod
+    def extract_directory(cls, dir_path: str | Path) -> list[PDFDocument]:
+        """Extract text and metadata from all PDF files in a given directory.
+
+        Args:
+            dir_path: Path to the directory containing PDFs.
+
+        Returns:
+            List of PDFDocument objects.
+
+        Raises:
+            FileNotFoundError: If the directory does not exist.
+            ValueError: If no PDF files are found in the directory.
+        """
+        directory = Path(dir_path)
+        if not directory.is_dir():
+            raise FileNotFoundError(f"Directory not found: {dir_path}")
+
+        pdf_files = sorted(directory.glob("*.pdf"))
+        if not pdf_files:
+            raise ValueError(f"No PDF files found in directory: {dir_path}")
+
+        documents: list[PDFDocument] = []
+        for pdf_file in pdf_files:
+            try:
+                doc = cls.extract_file(pdf_file)
+                documents.append(doc)
+            except Exception as e:
+                print(f"[!] Warning: Could not extract '{pdf_file.name}': {e}")
+
+        if not documents:
+            raise ValueError(f"Failed to extract text from any PDF in directory: {dir_path}")
+
+        return documents
+
+    @classmethod
+    def extract_path(cls, path_str: str | Path) -> list[PDFDocument]:
+        """Convenience method that handles either a single PDF file or a directory of PDFs."""
+        target = Path(path_str)
+        if target.is_dir():
+            return cls.extract_directory(target)
+        elif target.is_file():
+            return [cls.extract_file(target)]
+        else:
+            raise FileNotFoundError(f"Path not found: {path_str}")

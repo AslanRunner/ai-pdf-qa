@@ -1,5 +1,3 @@
-"""Utility script to generate sample report.pdf matching the CS 101 course grade roster."""
-
 from fpdf import FPDF
 
 

@@ -1,5 +1,3 @@
-"""PDF text extraction module using pypdf."""
-
 from pathlib import Path
 from typing import NamedTuple
 from pypdf import PdfReader

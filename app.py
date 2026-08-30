@@ -26,6 +26,24 @@ st.markdown(
         font-size: 1.05rem;
         margin-bottom: 1.5rem;
     }
+    /* Streamlit chat message formatting */
+    .stChatMessage {
+        border-radius: 12px;
+        margin-bottom: 0.8rem;
+    }
+    .stChatMessage h3 {
+        font-size: 1.25rem;
+        margin-top: 1rem;
+        margin-bottom: 0.4rem;
+        color: #1a73e8;
+    }
+    .stChatMessage code {
+        background-color: #f1f3f4;
+        color: #d93025;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
     .footer {
         text-align: center;
         color: #888;

@@ -34,23 +34,33 @@ class PDFChatAgent:
         context_str = "\n\n".join(combined_context)
 
         system_prompt = (
-            "You are a helpful assistant that analyzes, compares, and answers questions about multiple PDF documents.\n\n"
+            "You are a helpful, professional assistant that analyzes, compares, and answers questions about PDF documents.\n\n"
             "Here are the loaded documents:\n\n"
             f"{context_str}\n\n"
             "Instructions:\n"
-            "1. Answer questions based only on the information provided in these documents.\n"
-            "2. When comparing or referencing data, always clearly specify which document each piece of information comes from (e.g. mention the filename like 'report.pdf' or 'report2.pdf').\n"
-            "3. If information is missing or not mentioned in the documents, state that clearly."
+            "1. Answer questions based strictly and accurately on the information provided in these documents.\n"
+            "2. When comparing or referencing data, clearly state which document each piece of information comes from (e.g. mention the filename like 'CvAslan.pdf' or 'report.pdf').\n"
+            "3. If information is missing or not mentioned in the documents, state that clearly.\n"
+            "4. Presentation & Formatting Guidelines:\n"
+            "   - Format your responses cleanly using structured Markdown: clear headings (### / ####), organized bullet points, and **bold** highlights for key terms, names, and metrics.\n"
+            "   - When summarizing projects, resumes, or profiles, structure each item with clear subsections (e.g., Objectives / Amaç, Technologies Used / Kullanılan Teknolojiler, Key Highlights / Öne Çıkan Detaylar).\n"
+            "   - For comparisons, use comparative tables or clear side-by-side bullet lists.\n"
+            "   - Always respond in the language the user asks their question in (e.g. Turkish if the question is in Turkish, English if in English).\n"
+            "   - Keep explanations concise, professional, and visually easy to read at a glance."
         )
         self.messages = [SystemMessage(content=system_prompt)]
 
     def set_document_context(self, content: str) -> None:
         """Single document context helper for backward compatibility."""
         system_prompt = (
-            "You are a helpful assistant that answers questions about this PDF document.\n\n"
+            "You are a helpful, professional assistant that answers questions about this PDF document.\n\n"
             "Document content:\n"
             f"{content}\n\n"
-            "Answer based only on the information in this document."
+            "Instructions:\n"
+            "1. Answer based only on the information in this document.\n"
+            "2. Format your response cleanly using structured Markdown with headings, bullet points, and **bold** highlights.\n"
+            "3. When listing projects, experiences, or data, structure them clearly (e.g., Objectives, Technologies, Key Highlights).\n"
+            "4. Always reply in the same language as the user's question."
         )
         self.messages = [SystemMessage(content=system_prompt)]
 

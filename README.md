@@ -1,11 +1,11 @@
-# AI Multi-PDF Q&A and Comparison (ai-pdf-qa)
+# AI PDF Q&A and Comparison (ai-pdf-qa)
 
 > A modular CLI tool that extracts text from multiple PDF documents in a directory and provides comparative question answering, synthesis, and attribution using **Google Gemini** and **LangChain**.
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![LangChain](https://img.shields.io/badge/LangChain-Integration-brightgreen.svg)](https://github.com/langchain-ai/langchain)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Powered-orange.svg)](https://aistudio.google.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 ---
 

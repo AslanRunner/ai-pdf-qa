@@ -70,6 +70,25 @@ class PDFChatAgent:
         )
         self.messages = [SystemMessage(content=system_prompt)]
 
+    @staticmethod
+    def _extract_text(content: object) -> str:
+        """Extract clean plain text from LangChain message content, removing raw metadata/extras dicts."""
+        if isinstance(content, str):
+            return content.strip()
+        if isinstance(content, list):
+            parts = []
+            for part in content:
+                if isinstance(part, str):
+                    parts.append(part)
+                elif isinstance(part, dict) and "text" in part:
+                    parts.append(str(part["text"]))
+                elif hasattr(part, "text"):
+                    parts.append(str(part.text))
+            return "\n".join(parts).strip()
+        if hasattr(content, "text"):
+            return str(content.text).strip()
+        return str(content).strip()
+
     def ask(self, question: str) -> str:
         """Send a question to the agent, update history, and return the response."""
         self.messages.append(HumanMessage(content=question))
@@ -77,7 +96,7 @@ class PDFChatAgent:
         try:
             response = self.llm.invoke(self.messages)
             self.messages.append(response)
-            return str(response.content)
+            return self._extract_text(response.content)
         except Exception as e:
             error_str = str(e)
             if "not found" in error_str.lower() or "404" in error_str:
@@ -88,7 +107,7 @@ class PDFChatAgent:
                             response = self.llm.invoke(self.messages)
                             self.model_name = fallback
                             self.messages.append(response)
-                            return str(response.content)
+                            return self._extract_text(response.content)
                         except Exception:
                             continue
             if self.messages and isinstance(self.messages[-1], HumanMessage):

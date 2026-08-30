@@ -124,6 +124,22 @@ with st.sidebar:
                 st.session_state.agent.set_documents(st.session_state.documents)
             st.rerun()
 
+def clean_text_for_display(text: str) -> str:
+    """Ensure text is not a raw Python dictionary string and is clean markdown."""
+    trimmed = text.strip()
+    if (trimmed.startswith("[{'type':") or trimmed.startswith('[{"type":')) and "text" in trimmed:
+        try:
+            import ast
+            parsed = ast.literal_eval(trimmed)
+            if isinstance(parsed, list):
+                parts = [p.get("text", "") for p in parsed if isinstance(p, dict) and "text" in p]
+                if parts:
+                    return "\n\n".join(parts).strip()
+        except Exception:
+            pass
+    return text
+
+
 # Main area logic
 if not st.session_state.processed:
     st.info("👈 Upload PDF files from the sidebar to get started!")
@@ -131,7 +147,7 @@ else:
     # Render chat history
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            st.markdown(clean_text_for_display(message["content"]))
 
     # Chat input
     if prompt := st.chat_input("Ask a question about your PDFs..."):
@@ -145,8 +161,9 @@ else:
             with st.spinner("Thinking..."):
                 try:
                     response = st.session_state.agent.ask(prompt)
-                    st.markdown(response)
-                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    clean_response = clean_text_for_display(response)
+                    st.markdown(clean_response)
+                    st.session_state.messages.append({"role": "assistant", "content": clean_response})
                 except Exception as e:
                     error_msg = f"Error generating answer: {e}"
                     st.error(error_msg)

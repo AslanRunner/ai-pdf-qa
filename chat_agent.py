@@ -10,7 +10,7 @@ class PDFChatAgent:
 
     FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.6-pro", "gemini-2.5-flash", "gemini-1.5-flash"]
 
-    def __init__(self, api_key: str, model_name: str = "gemini-3.6-flash", temperature: float = 0.2):
+    def __init__(self, api_key: str, model_name: str = "gemini-3.6-flash", temperature: float | None = None):
         """Initialize LLM and agent state."""
         self.api_key = api_key
         self.model_name = model_name
@@ -19,11 +19,13 @@ class PDFChatAgent:
         self.messages: list[BaseMessage] = []
 
     def _create_llm(self, model_name: str) -> ChatGoogleGenerativeAI:
-        return ChatGoogleGenerativeAI(
-            model=model_name,
-            google_api_key=self.api_key,
-            temperature=self.temperature,
-        )
+        kwargs = {
+            "model": model_name,
+            "google_api_key": self.api_key,
+        }
+        if self.temperature is not None:
+            kwargs["temperature"] = self.temperature
+        return ChatGoogleGenerativeAI(**kwargs)
 
     def set_documents(self, documents: list[PDFDocument]) -> None:
         """Initialize conversation with labeled content from multiple PDF documents."""
@@ -39,14 +41,19 @@ class PDFChatAgent:
             f"{context_str}\n\n"
             "Instructions:\n"
             "1. Answer questions based strictly and accurately on the information provided in these documents.\n"
-            "2. When comparing or referencing data, clearly state which document each piece of information comes from (e.g. mention the filename like 'CvAslan.pdf' or 'report.pdf').\n"
+            "2. When comparing or referencing data, clearly state which document each piece of information comes from (e.g. mention the filename like 'AslanYusuf_ZEYBEK_CV.pdf').\n"
             "3. If information is missing or not mentioned in the documents, state that clearly.\n"
-            "4. Presentation & Formatting Guidelines:\n"
-            "   - Format your responses cleanly using structured Markdown: clear headings (### / ####), organized bullet points, and **bold** highlights for key terms, names, and metrics.\n"
-            "   - When summarizing projects, resumes, or profiles, structure each item with clear subsections (e.g., Objectives / Amaç, Technologies Used / Kullanılan Teknolojiler, Key Highlights / Öne Çıkan Detaylar).\n"
-            "   - For comparisons, use comparative tables or clear side-by-side bullet lists.\n"
-            "   - Always respond in the language the user asks their question in (e.g. Turkish if the question is in Turkish, English if in English).\n"
-            "   - Keep explanations concise, professional, and visually easy to read at a glance."
+            "4. Presentation & Formatting Rules (VERY IMPORTANT):\n"
+            "   - Always structure your answers in a clean, user-friendly, and professional Markdown layout.\n"
+            "   - Avoid raw text dumps. Use clear section headers (### / ####) and bullet points.\n"
+            "   - When presenting projects, resumes, or profiles, format each item like this:\n"
+            "     ### 1. [Proje / Başlık Adı]\n"
+            "     - **Amaç / Tanım:** [Kısa ve net açıklama]\n"
+            "     - **Kullanılan Teknolojiler:** [Teknolojiler, kütüphaneler, diller]\n"
+            "     - **Öne Çıkan Özellikler / Çıktılar:** [Temel başarılar, algoritmalar veya metrikler]\n"
+            "   - For comparisons across multiple PDFs, use comparative Markdown tables or side-by-side lists.\n"
+            "   - Always reply in the exact language the user asks their question in (e.g., Turkish for Turkish queries).\n"
+            "   - Bold important terms, technologies, and metrics so the text is easy to scan."
         )
         self.messages = [SystemMessage(content=system_prompt)]
 

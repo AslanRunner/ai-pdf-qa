@@ -1,4 +1,4 @@
-# AI Multi-PDF Q&A and Comparison (ai-pdf-qa)
+# AI PDF Q&A and Comparison (ai-pdf-qa)
 
 > A modular application that extracts text from single or multiple PDF documents and provides conversational question answering, cross-document comparison, and synthesis using **Google Gemini** and **LangChain**, available via both **CLI** and a **Streamlit Web UI**.
 
@@ -6,7 +6,7 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red.svg)](https://streamlit.io/)
 [![LangChain](https://img.shields.io/badge/LangChain-Integration-brightgreen.svg)](https://github.com/langchain-ai/langchain)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Powered-orange.svg)](https://aistudio.google.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 ---
 
@@ -133,8 +133,4 @@ To generate sample test documents (`documents/report.pdf` and `documents/report2
 python sample_report.py
 ```
 
----
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

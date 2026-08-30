@@ -59,6 +59,41 @@ class PDFExtractor:
             content=content,
         )
 
+    @staticmethod
+    def extract_stream(stream, file_name: str = "document.pdf") -> PDFDocument:
+        """Extract text and metadata from a file-like stream (e.g. Streamlit UploadedFile).
+
+        Args:
+            stream: A file-like object or bytes stream.
+            file_name: Name of the uploaded file.
+
+        Returns:
+            PDFDocument with metadata and extracted text.
+        """
+        reader = PdfReader(stream)
+        page_count = len(reader.pages)
+
+        extracted_pages = []
+        for page in reader.pages:
+            text = page.extract_text() or ""
+            extracted_pages.append(text)
+
+        content = "\n".join(extracted_pages).strip()
+
+        if not content:
+            raise ValueError(
+                f"No extractable text found in '{file_name}'. "
+                "It may contain scanned images or be password-protected."
+            )
+
+        return PDFDocument(
+            file_name=file_name,
+            file_path=file_name,
+            page_count=page_count,
+            char_count=len(content),
+            content=content,
+        )
+
     @classmethod
     def extract_directory(cls, dir_path: str | Path) -> list[PDFDocument]:
         """Extract text and metadata from all PDF files in a given directory.

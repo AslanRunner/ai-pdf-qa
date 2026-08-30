@@ -1,8 +1,9 @@
 # AI Multi-PDF Q&A and Comparison (ai-pdf-qa)
 
-> A modular CLI tool that extracts text from multiple PDF documents in a directory and provides comparative question answering, synthesis, and attribution using **Google Gemini** and **LangChain**.
+> A modular application that extracts text from single or multiple PDF documents and provides conversational question answering, cross-document comparison, and synthesis using **Google Gemini** and **LangChain**, available via both **CLI** and a **Streamlit Web UI**.
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red.svg)](https://streamlit.io/)
 [![LangChain](https://img.shields.io/badge/LangChain-Integration-brightgreen.svg)](https://github.com/langchain-ai/langchain)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Powered-orange.svg)](https://aistudio.google.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -11,12 +12,13 @@
 
 ## Features
 
-- **Multi-Document Ingestion**: Loads all PDF files from a directory and extracts text across all pages using `pypdf`.
+- **Modern Web Interface (Streamlit)**: Drag-and-drop PDF upload, document badge overview, and responsive real-time chat interface.
+- **Multi-Document Ingestion**: Loads one or many PDF files simultaneously and extracts text directly from memory or disk using `pypdf`.
 - **Document Labeling & Context Fusion**: Injects each document's text with explicit file markers (`=== filename ===`) into Gemini's system prompt.
 - **Comparative Analysis**: Compares, contrasts, and synthesizes data across multiple documents.
 - **Source Attribution**: Accurately cites which PDF document contains specific findings.
-- **Conversational Memory**: Retains multi-turn conversation history for seamless follow-up questions.
-- **Modular Architecture**: Clean separation between file extraction, AI agent logic, configuration, and the CLI interface.
+- **Conversational Memory**: Retains multi-turn conversation history for natural follow-up queries.
+- **Dual Mode Support**: Run as an interactive command-line tool (`main.py`) or as a web app (`app.py`).
 
 ---
 
@@ -25,9 +27,10 @@
 ```text
 ai-pdf-qa/
 ├── config.py           # Environment variables and API key management
-├── pdf_extractor.py    # Multi-PDF & directory text extraction module
+├── pdf_extractor.py    # Single, multi-PDF, directory and stream text extraction
 ├── chat_agent.py       # LangChain Gemini multi-document agent
-├── main.py             # Multi-PDF Q&A CLI entry point
+├── app.py              # Streamlit Web GUI application
+├── main.py             # CLI entry point for command-line usage
 ├── sample_report.py    # Generates sample comparison reports
 ├── documents/          # Sample PDF directory for testing
 │   ├── report.pdf      # CS 101 course grade roster
@@ -44,7 +47,7 @@ ai-pdf-qa/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/ai-pdf-qa.git
+git clone https://github.com/AslanRunner/ai-pdf-qa.git
 cd ai-pdf-qa
 ```
 
@@ -58,23 +61,36 @@ Create a `.env` file based on `.env.example`:
 ```bash
 cp .env.example .env
 ```
-Add your **Google Gemini API Key** (available at [Google AI Studio](https://aistudio.google.com/)):
+Add your **Google Gemini API Key** (available for free at [Google AI Studio](https://aistudio.google.com/)):
 ```env
 GOOGLE_API_KEY=your_gemini_api_key_here
 ```
 
-*(Note: If no `.env` file is present, the application will prompt you to enter the API key in the terminal on startup.)*
+---
+
+## Running the Web App (Streamlit)
+
+Launch the web GUI in your browser:
+```bash
+streamlit run app.py
+```
+
+The application will open automatically at `http://localhost:8501`.
+
+1. Upload one or multiple PDF documents using the sidebar.
+2. Click **Process PDFs**.
+3. Ask questions and compare documents directly in the chat interface.
 
 ---
 
-## Usage
+## Running the Command-Line Tool (CLI)
 
-Run the main application:
+Run via terminal:
 ```bash
 python main.py
 ```
 
-### Example Session
+### Example CLI Session
 
 ```text
 ====================================

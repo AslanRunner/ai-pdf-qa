@@ -62,16 +62,17 @@ THEME_VARS = """
     --bg-subtle: #17253a;
     --text-main: #f5eee3;
     --text-secondary: #c7d2e0;
-    --text-muted: #8899ac;
-    --border-color: #1f334d;
-    --border-strong: #2d4566;
+    --text-muted: #94a3b8;
+    --border-color: #22354e;
+    --border-strong: #334d6f;
     --accent-brand: #d8a65c;
     --accent-brand-hover: #e6b872;
+    --accent-brand-text: #09121f;
     --accent-blue: #72a4db;
     --bubble-user: #16273e;
     --bubble-user-border: #263e5e;
     --bubble-ai: #101d2f;
-    --bubble-ai-border: #1f334d;
+    --bubble-ai-border: #22354e;
     --code-bg: #0b1524;
     --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.4);
 """ if is_dark else """
@@ -86,6 +87,7 @@ THEME_VARS = """
     --border-strong: #c8bba4;
     --accent-brand: #0c1b33;
     --accent-brand-hover: #162b4e;
+    --accent-brand-text: #ffffff;
     --accent-blue: #1c3d6e;
     --bubble-user: #f3ede2;
     --bubble-user-border: #ded2be;
@@ -109,7 +111,11 @@ CUSTOM_CSS = f"""
     --space-64: 64px;
 }}
 
-/* Global resets */
+/* Universal text & app coloring */
+body, .stApp, p, span, label, li, td, th, h1, h2, h3, h4, h5, h6 {{
+    color: var(--text-main);
+}}
+
 .stApp {{
     background-color: var(--bg-canvas);
     font-family: 'Source Sans 3', sans-serif;
@@ -125,9 +131,9 @@ CUSTOM_CSS = f"""
     margin: 0 auto;
 }}
 
-/* Sidebar styling - clearly distinguished */
+/* Sidebar styling */
 section[data-testid="stSidebar"] {{
-    background-color: var(--bg-surface);
+    background-color: var(--bg-surface) !important;
     border-right: 1px solid var(--border-color);
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
 }}
@@ -135,6 +141,138 @@ section[data-testid="stSidebar"] {{
 section[data-testid="stSidebar"] .block-container {{
     padding-top: var(--space-32);
     padding-bottom: var(--space-32);
+}}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label {{
+    color: var(--text-main) !important;
+}}
+
+/* All widget labels across app and sidebar */
+label[data-testid="stWidgetLabel"],
+label[data-testid="stWidgetLabel"] p,
+label[data-testid="stWidgetLabel"] span,
+div[data-testid="stWidgetLabel"] p,
+div[data-testid="stWidgetLabel"] span {{
+    color: var(--text-main) !important;
+    font-family: 'Source Sans 3', sans-serif !important;
+    font-size: 0.9rem !important;
+}}
+
+/* Radio button text (Theme switcher) */
+div[data-testid="stRadio"] p,
+div[data-testid="stRadio"] span,
+div[data-testid="stRadio"] label {{
+    color: var(--text-main) !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+    font-size: 0.78rem !important;
+}}
+
+div[data-testid="stRadio"] div[role="radiogroup"] label div:first-child {{
+    border-color: var(--border-strong) !important;
+    background-color: var(--bg-surface) !important;
+}}
+
+/* Selectbox / Dropdown (Model selector) */
+div[data-baseweb="select"] > div {{
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-strong) !important;
+    color: var(--text-main) !important;
+}}
+
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div {{
+    color: var(--text-main) !important;
+}}
+
+div[data-baseweb="select"] svg {{
+    fill: var(--text-main) !important;
+}}
+
+/* BaseWeb Popover dropdown list */
+div[data-baseweb="popover"],
+ul[data-testid="stSelectboxVirtualDropdown"],
+ul[role="listbox"],
+li[role="option"] {{
+    background-color: var(--bg-surface) !important;
+    color: var(--text-main) !important;
+}}
+
+li[role="option"]:hover,
+li[role="option"][aria-selected="true"] {{
+    background-color: var(--bg-subtle) !important;
+    color: var(--text-main) !important;
+}}
+
+/* Slider values & labels */
+div[data-testid="stSlider"] div[data-testid="stThumbValue"] {{
+    color: var(--text-main) !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+}}
+
+div[data-testid="stSlider"] div[data-testid="stTickBarMin"],
+div[data-testid="stSlider"] div[data-testid="stTickBarMax"] {{
+    color: var(--text-muted) !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+}}
+
+/* File uploader */
+div[data-testid="stFileUploader"] section {{
+    background-color: var(--bg-surface) !important;
+    border: 1px dashed var(--border-strong) !important;
+}}
+
+div[data-testid="stFileUploader"] section span,
+div[data-testid="stFileUploader"] section small {{
+    color: var(--text-secondary) !important;
+}}
+
+div[data-testid="stFileUploader"] button {{
+    background-color: var(--bg-subtle) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-strong) !important;
+}}
+
+div[data-testid="stFileUploaderFile"] {{
+    background-color: var(--bg-subtle) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--space-4);
+}}
+
+div[data-testid="stFileUploaderFile"] span,
+div[data-testid="stFileUploaderFile"] small {{
+    color: var(--text-main) !important;
+}}
+
+div[data-testid="stFileUploaderFile"] svg {{
+    fill: var(--text-main) !important;
+}}
+
+/* Chat Input Bar & Textarea */
+div[data-testid="stChatInput"] {{
+    background-color: var(--bg-surface) !important;
+    border: 1px solid var(--border-strong) !important;
+    box-shadow: var(--shadow-soft);
+}}
+
+div[data-testid="stChatInput"] textarea {{
+    color: var(--text-main) !important;
+    background-color: transparent !important;
+    font-family: 'Source Sans 3', sans-serif !important;
+    font-size: 0.95rem;
+}}
+
+div[data-testid="stChatInput"] textarea::placeholder {{
+    color: var(--text-muted) !important;
+}}
+
+div[data-testid="stChatInput"] button svg {{
+    fill: var(--text-main) !important;
 }}
 
 /* Top Navigation Masthead */
@@ -159,14 +297,14 @@ section[data-testid="stSidebar"] .block-container {{
     font-weight: 800;
     font-size: 1.85rem;
     letter-spacing: -0.03em;
-    color: var(--text-main);
+    color: var(--text-main) !important;
     text-decoration: none;
 }}
 
 .masthead-subtitle {{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
     letter-spacing: 0.05em;
 }}
 
@@ -181,14 +319,14 @@ section[data-testid="stSidebar"] .block-container {{
     font-size: 2.5rem;
     line-height: 1.15;
     letter-spacing: -0.02em;
-    color: var(--text-main);
+    color: var(--text-main) !important;
     margin: 0 0 var(--space-8) 0;
 }}
 
 .hero-subtext {{
     font-size: 1.08rem;
     line-height: 1.55;
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     max-width: 620px;
     margin: 0;
 }}
@@ -214,10 +352,14 @@ section[data-testid="stSidebar"] .block-container {{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.76rem;
     background-color: var(--bg-subtle);
-    color: var(--text-main);
+    color: var(--text-main) !important;
     padding: var(--space-4) var(--space-8);
     border: 1px solid var(--border-color);
     border-radius: var(--space-2);
+}}
+
+.doc-chip small {{
+    color: var(--text-muted) !important;
 }}
 
 /* Button styling */
@@ -225,90 +367,120 @@ div.stButton > button {{
     font-family: 'Source Sans 3', sans-serif;
     font-size: 0.88rem;
     font-weight: 600;
-    background-color: var(--bg-surface);
-    color: var(--text-main);
-    border: 1px solid var(--border-strong);
+    background-color: var(--bg-surface) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-strong) !important;
     border-radius: var(--space-4);
     padding: var(--space-8) var(--space-16);
     transition: all 0.15s ease;
 }}
 
+div.stButton > button p,
+div.stButton > button span {{
+    color: var(--text-main) !important;
+}}
+
 div.stButton > button:hover {{
-    background-color: var(--accent-brand);
-    color: {'#09121f' if is_dark else '#ffffff'};
-    border-color: var(--accent-brand);
+    background-color: var(--accent-brand) !important;
+    border-color: var(--accent-brand) !important;
+}}
+
+div.stButton > button:hover p,
+div.stButton > button:hover span {{
+    color: var(--accent-brand-text) !important;
 }}
 
 div.stButton > button[kind="primary"] {{
-    background-color: var(--accent-brand);
-    color: {'#09121f' if is_dark else '#ffffff'};
-    border-color: var(--accent-brand);
+    background-color: var(--accent-brand) !important;
+    border-color: var(--accent-brand) !important;
+}}
+
+div.stButton > button[kind="primary"] p,
+div.stButton > button[kind="primary"] span {{
+    color: var(--accent-brand-text) !important;
 }}
 
 div.stButton > button[kind="primary"]:hover {{
-    background-color: var(--accent-brand-hover);
-    border-color: var(--accent-brand-hover);
+    background-color: var(--accent-brand-hover) !important;
+    border-color: var(--accent-brand-hover) !important;
 }}
 
-/* Chat messages */
+div.stButton > button[kind="primary"]:hover p,
+div.stButton > button[kind="primary"]:hover span {{
+    color: var(--accent-brand-text) !important;
+}}
+
+/* Chat messages & Markdown text */
 div.stChatMessage {{
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
+    background-color: var(--bubble-ai) !important;
+    border: 1px solid var(--bubble-ai-border) !important;
     border-radius: var(--space-4);
     padding: var(--space-16);
     margin-bottom: var(--space-16);
-    color: var(--text-main);
     box-shadow: var(--shadow-soft);
 }}
 
 div.stChatMessage[data-testid="stChatMessageUser"] {{
-    background-color: var(--bubble-user);
-    border-color: var(--bubble-user-border);
+    background-color: var(--bubble-user) !important;
+    border-color: var(--bubble-user-border) !important;
 }}
 
 div.stChatMessage[data-testid="stChatMessageAssistant"] {{
-    background-color: var(--bubble-ai);
-    border-color: var(--bubble-ai-border);
+    background-color: var(--bubble-ai) !important;
+    border-color: var(--bubble-ai-border) !important;
 }}
 
-div.stChatMessage h1, div.stChatMessage h2, div.stChatMessage h3 {{
+div[data-testid="stMarkdownContainer"] p,
+div[data-testid="stMarkdownContainer"] span,
+div[data-testid="stMarkdownContainer"] li,
+div[data-testid="stMarkdownContainer"] strong {{
+    color: var(--text-main) !important;
+}}
+
+div.stChatMessage h1,
+div.stChatMessage h2,
+div.stChatMessage h3,
+div.stChatMessage h4 {{
     font-family: 'Newsreader', Georgia, serif;
     font-weight: 700;
-    color: var(--text-main);
+    color: var(--text-main) !important;
     margin-top: var(--space-16);
     margin-bottom: var(--space-8);
 }}
 
 div.stChatMessage code {{
-    font-family: 'IBM Plex Mono', monospace;
-    background-color: var(--code-bg);
-    color: var(--text-main);
+    font-family: 'IBM Plex Mono', monospace !important;
+    background-color: var(--code-bg) !important;
+    color: var(--text-main) !important;
     padding: var(--space-2) var(--space-4);
     border-radius: var(--space-2);
     border: 1px solid var(--border-color);
     font-size: 0.88em;
 }}
 
-/* Chat input bar */
-div[data-testid="stChatInput"] {{
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--space-4);
-    box-shadow: var(--shadow-soft);
+div.stChatMessage pre code {{
+    display: block;
+    padding: var(--space-16) !important;
+    overflow-x: auto;
 }}
 
-div[data-testid="stChatInput"] textarea {{
+div.stChatMessage table {{
+    border-collapse: collapse;
+    width: 100%;
+    margin: var(--space-16) 0;
+}}
+
+div.stChatMessage th,
+div.stChatMessage td {{
+    border: 1px solid var(--border-color) !important;
+    padding: var(--space-8) var(--space-12, 12px);
     color: var(--text-main) !important;
-    font-family: 'Source Sans 3', sans-serif;
-    font-size: 0.95rem;
 }}
 
-/* File uploader */
-div[data-testid="stFileUploader"] section {{
-    background-color: var(--bg-surface);
-    border: 1px dashed var(--border-strong);
-    border-radius: var(--space-4);
-    padding: var(--space-16);
+div.stChatMessage th {{
+    background-color: var(--bg-subtle) !important;
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 700;
 }}
 
 /* Minimalist empty box */
@@ -328,11 +500,11 @@ div[data-testid="stFileUploader"] section {{
     font-weight: 700;
     font-size: 1.5rem;
     margin-bottom: var(--space-8);
-    color: var(--text-main);
+    color: var(--text-main) !important;
 }}
 
 .empty-box p {{
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
     font-size: 0.95rem;
     max-width: 460px;
     margin: 0 auto var(--space-24, 24px) auto;
@@ -342,25 +514,24 @@ div[data-testid="stFileUploader"] section {{
 .suggestion-header {{
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     margin-bottom: var(--space-8);
 }}
 
-/* Simple footer */
-.simple-footer {{
-    margin-top: var(--space-64);
-    padding-top: var(--space-16);
-    padding-bottom: var(--space-16);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--text-muted);
+/* Alerts / Warnings / Infos */
+div[data-testid="stAlert"] {{
+    background-color: var(--bg-subtle) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
 }}
+
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] span {{
+    color: var(--text-main) !important;
+}}
+
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)

@@ -19,7 +19,7 @@ from chat_agent import PDFChatAgent
 # 1. PAGE SETUP
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Folio · Belge Araştırma",
+    page_title="Folio · Document Intelligence",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -695,7 +695,7 @@ with col_brand:
         """
         <div class="masthead-brand">
             <span class="masthead-logo">Folio</span>
-            <span class="masthead-subtitle">/ Belge Araştırma &amp; Analiz</span>
+            <span class="masthead-subtitle">/ Document Research &amp; Synthesis</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -703,7 +703,7 @@ with col_brand:
 
 with col_theme:
     # Modern sliding toggle switch
-    is_dark_toggle = st.toggle("🌙 Koyu Mod", value=is_dark)
+    is_dark_toggle = st.toggle("🌙 Dark Mode", value=is_dark)
     new_mode = "dark" if is_dark_toggle else "light"
     if new_mode != st.session_state.theme_mode:
         st.session_state.theme_mode = new_mode
@@ -713,32 +713,32 @@ with col_theme:
 # 6. SIDEBAR (DOCUMENTS & SETTINGS)
 # -----------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("### 📁 Belgeler")
+    st.markdown("### 📁 Documents")
     uploaded_files = st.file_uploader(
-        "PDF Dosyaları",
+        "Upload PDF Files",
         type=["pdf"],
         accept_multiple_files=True,
-        help="Analiz etmek istediğiniz PDF'leri buraya yükleyin.",
+        help="Select single or multiple PDF documents to analyze and compare.",
     )
 
     col_s1, col_s2 = st.columns(2)
     with col_s1:
-        process_clicked = st.button("Yükle & İncele", type="primary", use_container_width=True)
+        process_clicked = st.button("Process Files", type="primary", use_container_width=True)
     with col_s2:
-        sample_clicked = st.button("Örnekleri Aç", use_container_width=True)
+        sample_clicked = st.button("Open Samples", use_container_width=True)
 
     if process_clicked:
         if not uploaded_files:
-            st.warning("Lütfen en az bir dosya seçin.")
+            st.warning("Please select at least one PDF file first.")
         else:
-            with st.spinner("Belgeler okunuyor..."):
+            with st.spinner("Reading and indexing documents..."):
                 docs: list[PDFDocument] = []
                 for f in uploaded_files:
                     try:
                         doc = PDFExtractor.extract_stream(f, file_name=f.name)
                         docs.append(doc)
                     except Exception as e:
-                        st.error(f"Hata ({f.name}): {e}")
+                        st.error(f"Error ({f.name}): {e}")
 
                 if docs:
                     api_key = get_api_key()
@@ -755,7 +755,7 @@ with st.sidebar:
                     st.rerun()
 
     if sample_clicked:
-        with st.spinner("Örnek belgeler açılıyor..."):
+        with st.spinner("Opening sample document archive..."):
             sample_docs = load_local_samples()
             if sample_docs:
                 api_key = get_api_key()
@@ -770,12 +770,14 @@ with st.sidebar:
                 st.session_state.processed = True
                 st.session_state.messages = []
                 st.rerun()
+            else:
+                st.error("No sample documents found in 'documents/' directory.")
 
     st.markdown("---")
-    st.markdown("### ⚙️ Ayarlar")
+    st.markdown("### ⚙️ Configuration")
     available_models = ["gemini-3.6-flash", "gemini-3.6-pro", "gemini-2.5-flash", "gemini-1.5-flash"]
     chosen_model = st.selectbox(
-        "Model",
+        "Model Architecture",
         available_models,
         index=available_models.index(st.session_state.selected_model) if st.session_state.selected_model in available_models else 0,
     )
@@ -790,7 +792,7 @@ with st.sidebar:
             st.session_state.agent.set_documents(st.session_state.documents)
 
     chosen_temp = st.slider(
-        "Yaratıcılık Derecesi",
+        "Temperature (Determinism vs Synthesis)",
         min_value=0.0,
         max_value=1.0,
         value=float(st.session_state.temperature),
@@ -804,7 +806,7 @@ with st.sidebar:
 
     if st.session_state.processed and st.session_state.documents:
         st.markdown("---")
-        if st.button("Sohbeti Temizle", use_container_width=True):
+        if st.button("Clear Conversation", use_container_width=True):
             st.session_state.messages = []
             if st.session_state.agent:
                 st.session_state.agent.reset()
@@ -818,9 +820,9 @@ if not st.session_state.processed:
     st.markdown(
         """
         <div class="hero-box">
-            <h1 class="hero-heading">Belgelerinizi derinlemesine okuyun ve karşılaştırın.</h1>
+            <h1 class="hero-heading">Read, interrogate, and synthesize your documents.</h1>
             <p class="hero-subtext">
-                PDF formatındaki araştırma raporlarını, ders notlarını veya sözleşmeleri yükleyin; sorularınızı doğrudan metne dayalı olarak yanıtlayalım.
+                Upload research papers, technical reports, or contracts in PDF format; get rigorous answers grounded directly in your text.
             </p>
         </div>
         """,
@@ -830,8 +832,8 @@ if not st.session_state.processed:
     st.markdown(
         """
         <div class="empty-box">
-            <h3>Başlamak için belge yükleyin</h3>
-            <p>Sol panelden kendi PDF dosyalarınızı ekleyin veya mevcut iki örnek raporu tek tıkla deneyin.</p>
+            <h3>Upload documents to get started</h3>
+            <p>Add your PDF files from the sidebar, or explore the pre-loaded sample reports with one click.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -839,7 +841,7 @@ if not st.session_state.processed:
 
     col_c1, col_c2, col_c3 = st.columns([1, 2, 1])
     with col_c2:
-        if st.button("Örnek Raporları Yükle (2 PDF)", type="primary", use_container_width=True):
+        if st.button("Load Sample Reports (2 PDFs)", type="primary", use_container_width=True):
             sample_docs = load_local_samples()
             if sample_docs:
                 api_key = get_api_key()
@@ -863,7 +865,7 @@ else:
             <span class="workbench-doc-icon">📄</span>
             <div class="workbench-doc-info">
                 <span class="workbench-doc-title">{doc.file_name}</span>
-                <span class="workbench-doc-meta">{doc.page_count} sayfa · {doc.char_count:,} karakter</span>
+                <span class="workbench-doc-meta">{doc.page_count} {'page' if doc.page_count == 1 else 'pages'} · {doc.char_count:,} characters</span>
             </div>
         </div>
         """
@@ -874,7 +876,7 @@ else:
         f"""
         <div class="workbench-panel">
             <div class="workbench-header">
-                <span class="workbench-label">✦ İNCELENEN BELGELER ({len(st.session_state.documents)})</span>
+                <span class="workbench-label">✦ ACTIVE DOSSIERS ({len(st.session_state.documents)})</span>
                 <span class="workbench-model-tag">{st.session_state.selected_model}</span>
             </div>
             <div class="workbench-docs-grid">
@@ -889,16 +891,16 @@ else:
     st.markdown('<div class="quick-actions-bar">', unsafe_allow_html=True)
     col_q1, col_q2, col_q3, col_q4 = st.columns(4)
     with col_q1:
-        if st.button("📌 Ana Fikri Özetle", use_container_width=True):
-            st.session_state.pending_prompt = "Yüklenen belgelerin ana konusunu ve önemli sonuçlarını özetle."
+        if st.button("📌 Executive Summary", use_container_width=True):
+            st.session_state.pending_prompt = "Provide a high-impact executive summary of the loaded documents, detailing primary objectives, key findings, and final conclusions."
     with col_q2:
-        if st.button("⚖️ Tabloyla Karşılaştır", use_container_width=True):
-            st.session_state.pending_prompt = "Belgeleri temel kriterler, yöntemler ve bulgular açısından karşılaştıran bir tablo hazırla."
+        if st.button("⚖️ Comparative Table", use_container_width=True):
+            st.session_state.pending_prompt = "Construct a comprehensive Markdown comparison table evaluating the documents across key parameters, methodology, datasets, and outcomes."
     with col_q3:
-        if st.button("🔍 Metrikleri Listele", use_container_width=True):
-            st.session_state.pending_prompt = "Belgelerdeki tüm sayısal verileri, istatistikleri ve yüzdeleri çıkar."
+        if st.button("🔍 Key Metrics & Data", use_container_width=True):
+            st.session_state.pending_prompt = "Extract and list all quantitative data, percentages, statistical metrics, and numerical benchmarks reported across the documents."
     with col_q4:
-        if st.button("🧹 Sohbeti Temizle", use_container_width=True):
+        if st.button("🧹 Clear Conversation", use_container_width=True):
             st.session_state.messages = []
             if st.session_state.agent:
                 st.session_state.agent.reset()
@@ -914,7 +916,7 @@ else:
             st.markdown(clean_text_for_display(message["content"]))
 
     # Prompt Input (Single pill with zero outer ring)
-    prompt = st.chat_input("Belgelerle ilgili bir soru sorun...")
+    prompt = st.chat_input("Ask a question about your documents...")
     if st.session_state.pending_prompt:
         prompt = st.session_state.pending_prompt
         st.session_state.pending_prompt = None
@@ -925,11 +927,11 @@ else:
             st.markdown(prompt)
 
         with st.chat_message("assistant", avatar="📖"):
-            with st.spinner("Belgeler inceleniyor..."):
+            with st.spinner("Analyzing documents and synthesizing response..."):
                 try:
                     response = st.session_state.agent.ask(prompt)
                     clean_response = clean_text_for_display(response)
                     st.markdown(clean_response)
                     st.session_state.messages.append({"role": "assistant", "content": clean_response})
                 except Exception as e:
-                    st.error(f"Bir hata oluştu: {e}")
+                    st.error(f"An error occurred while generating the answer: {e}")

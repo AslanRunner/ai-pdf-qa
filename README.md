@@ -68,7 +68,7 @@ GOOGLE_API_KEY=your_gemini_api_key_here
 
 ---
 
-## Running the Web App (Streamlit)
+## Running the Web App
 
 Launch the web GUI in your browser:
 ```bash

@@ -309,3 +309,57 @@ This Map of Content acts as the central router for your Obsidian vault.
             saved_paths.append(file_path)
 
         return saved_paths
+
+    @staticmethod
+    def save_dialogue_session(
+        vault_dir: str | Path,
+        documents: list[PDFDocument],
+        messages: list[dict],
+    ) -> Path:
+        """Save an interactive Q&A session as an interconnected Obsidian Dialogue note."""
+        base = Path(vault_dir).resolve()
+        dialogues_dir = base / "Dialogues"
+        dialogues_dir.mkdir(parents=True, exist_ok=True)
+
+        now = datetime.now()
+        timestamp_str = now.strftime("%Y-%m-%d_%H%M")
+        display_time = now.strftime("%Y-%m-%d %H:%M")
+
+        doc_links = ", ".join(f"[[{Path(d.file_name).stem}]]" for d in documents)
+        filename = f"Dialogue_{timestamp_str}.md"
+        file_path = dialogues_dir / filename
+
+        convo_lines = []
+        user_turn = 1
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "").strip()
+            if role == "user":
+                convo_lines.append(f"### ❓ Query {user_turn}: {content}\n")
+                user_turn += 1
+            else:
+                convo_lines.append(f"**💡 Folio Synthesis:**\n\n{content}\n\n---")
+
+        body_text = "\n\n".join(convo_lines)
+
+        note_content = f"""---
+title: "Research Dialogue · {display_time}"
+type: dialogue
+date: "{now.strftime('%Y-%m-%d')}"
+sources: [{doc_links}]
+tags:
+  - dialogue
+  - q-and-a
+  - second-brain
+---
+
+# 💬 Research Dialogue Session ({display_time})
+
+> **Referenced Dossiers:** {doc_links}
+
+---
+
+{body_text}
+"""
+        file_path.write_text(note_content.strip(), encoding="utf-8")
+        return file_path

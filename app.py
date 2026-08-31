@@ -1000,6 +1000,22 @@ else:
             with st.chat_message(role, avatar=avatar):
                 st.markdown(clean_text_for_display(message["content"]))
 
+        # Optional: Save Dialogue Session to Vault
+        if st.session_state.messages:
+            col_save1, col_save2 = st.columns([2, 1])
+            with col_save2:
+                if st.button("💾 Save Dialogue to Obsidian Vault", use_container_width=True):
+                    try:
+                        vault_dir = r"C:\Users\USER\Documents\Aslan\data"
+                        saved_dialogue = SecondBrainSynthesizer.save_dialogue_session(
+                            vault_dir,
+                            st.session_state.documents,
+                            st.session_state.messages,
+                        )
+                        st.success(f"Dialogue session saved as a connected node: `{saved_dialogue.name}`!")
+                    except Exception as err:
+                        st.error(f"Failed to save dialogue: {err}")
+
         # Prompt Input (Single pill with zero outer ring)
         prompt = st.chat_input("Ask a question about your documents...")
         if st.session_state.pending_prompt:
@@ -1018,6 +1034,7 @@ else:
                         clean_response = clean_text_for_display(response)
                         st.markdown(clean_response)
                         st.session_state.messages.append({"role": "assistant", "content": clean_response})
+                        st.rerun()
                     except Exception as e:
                         st.error(f"An error occurred while generating the answer: {e}")
 
@@ -1103,7 +1120,7 @@ else:
             # Direct Export Expander
             with st.expander("💾 Direct Export to Local Obsidian Vault Directory"):
                 st.markdown("Specify your local Obsidian Vault folder path to write all notes directly to disk:")
-                target_path = st.text_input("Obsidian Vault Folder Path", placeholder="e.g. C:/Users/USER/Documents/MyObsidianVault")
+                target_path = st.text_input("Obsidian Vault Folder Path", value=r"C:\Users\USER\Documents\Aslan\data")
                 if st.button("Export Directly to Directory"):
                     if not target_path.strip():
                         st.warning("Please enter a valid directory path.")

@@ -12,7 +12,7 @@
 
 ## Features
 
-- **Modern Web Interface (Streamlit)**: Drag-and-drop PDF upload, document badge overview, and responsive real-time chat interface.
+- **Modern Web Interface**: Drag-and-drop PDF upload, document badge overview, and responsive real-time chat interface.
 - **Multi-Document Ingestion**: Loads one or many PDF files simultaneously and extracts text directly from memory or disk using `pypdf`.
 - **Document Labeling & Context Fusion**: Injects each document's text with explicit file markers (`=== filename ===`) into Gemini's system prompt.
 - **Comparative Analysis**: Compares, contrasts, and synthesizes data across multiple documents.

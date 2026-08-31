@@ -808,12 +808,24 @@ with st.sidebar:
         else:
             with st.spinner("Reading and indexing documents..."):
                 docs: list[PDFDocument] = []
+                seen_hashes = {d.file_hash for d in st.session_state.documents if d.file_hash}
+                seen_names = {d.file_name for d in st.session_state.documents}
+                skipped_names = []
+
                 for f in uploaded_files:
                     try:
                         doc = PDFExtractor.extract_stream(f, file_name=f.name)
+                        if doc.file_hash in seen_hashes or doc.file_name in seen_names:
+                            skipped_names.append(doc.file_name)
+                            continue
+                        seen_hashes.add(doc.file_hash)
+                        seen_names.add(doc.file_name)
                         docs.append(doc)
                     except Exception as e:
                         st.error(f"Error ({f.name}): {e}")
+
+                if skipped_names:
+                    st.sidebar.info(f"Skipped {len(skipped_names)} duplicate file(s): {', '.join(skipped_names)}")
 
                 if docs:
                     api_key = get_api_key()
@@ -936,25 +948,46 @@ if not st.session_state.processed:
                 st.rerun()
 
 else:
-    # Rich Research Desk Header (Persistent across views)
-    doc_chips_html = "".join(
-        f"""
-        <div class="workbench-doc-chip">
-            <span class="workbench-doc-icon">📄</span>
-            <div class="workbench-doc-info">
-                <span class="workbench-doc-title">{doc.file_name}</span>
-                <span class="workbench-doc-meta">{doc.page_count} {'page' if doc.page_count == 1 else 'pages'} · {doc.char_count:,} characters</span>
+    # Check Obsidian Vault for already indexed documents
+    default_vault_dir = r"C:\Users\USER\Documents\Aslan\data"
+    vault_catalog = SecondBrainSynthesizer.get_vault_catalog(default_vault_dir)
+
+    doc_chips = []
+    already_indexed_count = 0
+    for doc in st.session_state.documents:
+        clean_name = Path(doc.file_name).stem
+        in_vault = (
+            (doc.file_hash and doc.file_hash in vault_catalog)
+            or clean_name.lower() in vault_catalog
+            or doc.file_name.lower() in vault_catalog
+        )
+        if in_vault:
+            already_indexed_count += 1
+            badge = '<span style="color: #4ade80; font-size: 0.72rem; font-weight: 600; margin-left: 4px;">● IN VAULT</span>'
+        else:
+            badge = '<span style="color: #d8a65c; font-size: 0.72rem; font-weight: 600; margin-left: 4px;">✦ NEW</span>'
+
+        doc_chips.append(
+            f"""
+            <div class="workbench-doc-chip">
+                <span class="workbench-doc-icon">📄</span>
+                <div class="workbench-doc-info">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="workbench-doc-title">{doc.file_name}</span>
+                        {badge}
+                    </div>
+                    <span class="workbench-doc-meta">{doc.page_count} {'page' if doc.page_count == 1 else 'pages'} · {doc.char_count:,} chars · #{doc.file_hash[:6] if doc.file_hash else 'pdf'}</span>
+                </div>
             </div>
-        </div>
-        """
-        for doc in st.session_state.documents
-    )
+            """
+        )
+    doc_chips_html = "".join(doc_chips)
 
     st.markdown(
         f"""
         <div class="workbench-panel">
             <div class="workbench-header">
-                <span class="workbench-label">✦ ACTIVE DOSSIERS ({len(st.session_state.documents)})</span>
+                <span class="workbench-label">✦ ACTIVE DOSSIERS ({len(st.session_state.documents)}) · {already_indexed_count} In Vault</span>
                 <span class="workbench-model-tag">{st.session_state.selected_model}</span>
             </div>
             <div class="workbench-docs-grid">
@@ -1006,7 +1039,7 @@ else:
             with col_save2:
                 if st.button("💾 Save Dialogue to Obsidian Vault", use_container_width=True):
                     try:
-                        vault_dir = r"C:\Users\USER\Documents\Aslan\data"
+                        vault_dir = default_vault_dir
                         saved_dialogue = SecondBrainSynthesizer.save_dialogue_session(
                             vault_dir,
                             st.session_state.documents,
@@ -1058,6 +1091,13 @@ else:
                 unsafe_allow_html=True,
             )
 
+            if already_indexed_count > 0:
+                st.info(f"ℹ️ **Vault Memory Active:** {already_indexed_count} of your {len(st.session_state.documents)} loaded documents are already indexed in your Obsidian Vault. Only new documents will consume API synthesis calls unless forced.")
+
+            col_opt1, col_opt2 = st.columns([1, 1])
+            with col_opt1:
+                force_overwrite = st.checkbox("Force re-synthesize and overwrite existing notes in vault", value=False)
+
             col_s1, col_s2, col_s3 = st.columns([1, 2, 1])
             with col_s2:
                 if st.button("⚡ Synthesize Obsidian Vault Now", type="primary", use_container_width=True):
@@ -1068,7 +1108,13 @@ else:
                                 model_name=st.session_state.selected_model,
                                 temperature=st.session_state.temperature,
                             )
-                            vault = synthesizer.synthesize_vault(st.session_state.documents)
+                            vault = synthesizer.synthesize_vault(
+                                st.session_state.documents,
+                                vault_dir=default_vault_dir,
+                                overwrite=force_overwrite,
+                            )
+                            # Automatically sync with local vault
+                            SecondBrainSynthesizer.export_to_directory(vault, default_vault_dir)
                             st.session_state.vault_package = vault
                             st.rerun()
                         except Exception as e:

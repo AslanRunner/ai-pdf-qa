@@ -1,5 +1,6 @@
 """PDF text extraction module supporting single and multi-PDF directory extraction."""
 
+import hashlib
 from pathlib import Path
 from typing import NamedTuple
 from pypdf import PdfReader
@@ -12,6 +13,7 @@ class PDFDocument(NamedTuple):
     page_count: int
     char_count: int
     content: str
+    file_hash: str = ""
 
 
 class PDFExtractor:
@@ -51,12 +53,15 @@ class PDFExtractor:
                 "It may contain scanned images or be password-protected."
             )
 
+        file_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+
         return PDFDocument(
             file_name=path.name,
             file_path=str(path),
             page_count=page_count,
             char_count=len(content),
             content=content,
+            file_hash=file_hash,
         )
 
     @staticmethod
@@ -86,12 +91,15 @@ class PDFExtractor:
                 "It may contain scanned images or be password-protected."
             )
 
+        file_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+
         return PDFDocument(
             file_name=file_name,
             file_path=file_name,
             page_count=page_count,
             char_count=len(content),
             content=content,
+            file_hash=file_hash,
         )
 
     @classmethod

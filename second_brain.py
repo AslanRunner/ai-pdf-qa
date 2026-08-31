@@ -62,19 +62,125 @@ class SecondBrainSynthesizer:
             temperature=temperature,
         )
 
-    def synthesize_vault(self, documents: list[PDFDocument]) -> VaultPackage:
-        """Synthesize an entire Obsidian Vault from the given documents."""
+    @staticmethod
+    def get_vault_catalog(vault_dir: str | Path) -> dict[str, dict]:
+        """Scan existing Obsidian Vault and return catalog of already indexed documents."""
+        base = Path(vault_dir).resolve()
+        lit_dir = base / "Literature"
+        catalog: dict[str, dict] = {}
+        if not lit_dir.exists():
+            return catalog
+
+        for md_file in lit_dir.glob("*.md"):
+            try:
+                text = md_file.read_text(encoding="utf-8")
+                file_hash = ""
+                source_file = md_file.name
+                date_imported = ""
+                title = md_file.stem.replace("_", " ").title()
+
+                if text.startswith("---"):
+                    parts = text.split("---", 2)
+                    if len(parts) >= 3:
+                        fm_text = parts[1]
+                        for line in fm_text.splitlines():
+                            if line.startswith("file_hash:"):
+                                file_hash = line.split(":", 1)[1].strip().strip('"').strip("'")
+                            elif line.startswith("source_file:"):
+                                source_file = line.split(":", 1)[1].strip().strip('"').strip("'")
+                            elif line.startswith("date_imported:"):
+                                date_imported = line.split(":", 1)[1].strip().strip('"').strip("'")
+                            elif line.startswith("title:"):
+                                title = line.split(":", 1)[1].strip().strip('"').strip("'")
+
+                entry = {
+                    "stem": md_file.stem,
+                    "title": title,
+                    "filename": md_file.name,
+                    "file_path": str(md_file),
+                    "file_hash": file_hash,
+                    "source_file": source_file,
+                    "date_imported": date_imported or "Earlier",
+                    "content": text,
+                }
+                catalog[md_file.stem.lower()] = entry
+                if file_hash:
+                    catalog[file_hash] = entry
+                if source_file:
+                    catalog[source_file.lower()] = entry
+            except Exception:
+                continue
+
+        return catalog
+
+    def synthesize_vault(
+        self,
+        documents: list[PDFDocument],
+        vault_dir: str | Path | None = None,
+        overwrite: bool = False,
+    ) -> VaultPackage:
+        """Synthesize an Obsidian Vault, reusing existing notes if already indexed in vault_dir."""
         if not documents:
             return VaultPackage()
 
-        # Step 1: Synthesize Literature Notes for each document
-        lit_notes: list[VaultNote] = []
-        for doc in documents:
-            note = self._generate_literature_note(doc)
-            lit_notes.append(note)
+        catalog = self.get_vault_catalog(vault_dir) if vault_dir else {}
 
-        # Step 2: Extract Atomic Concept Notes across the document corpus
-        concept_notes = self._generate_atomic_concepts(documents, lit_notes)
+        # Step 1: Synthesize Literature Notes (reuse if present and overwrite is False)
+        lit_notes: list[VaultNote] = []
+        new_docs: list[PDFDocument] = []
+
+        for doc in documents:
+            clean_name = Path(doc.file_name).stem
+            existing_entry = None
+            if not overwrite and catalog:
+                if doc.file_hash and doc.file_hash in catalog:
+                    existing_entry = catalog[doc.file_hash]
+                elif clean_name.lower() in catalog:
+                    existing_entry = catalog[clean_name.lower()]
+                elif doc.file_name.lower() in catalog:
+                    existing_entry = catalog[doc.file_name.lower()]
+
+            if existing_entry and not overwrite:
+                note = VaultNote(
+                    filename=existing_entry["filename"],
+                    folder="Literature",
+                    title=existing_entry["title"],
+                    content=existing_entry["content"],
+                    note_type="literature",
+                )
+                lit_notes.append(note)
+            else:
+                note = self._generate_literature_note(doc)
+                lit_notes.append(note)
+                new_docs.append(doc)
+
+        # Step 2: Atomic Concepts (merge existing + fresh concepts)
+        existing_concepts: list[VaultNote] = []
+        if vault_dir and not overwrite:
+            conc_dir = Path(vault_dir).resolve() / "Concepts"
+            if conc_dir.exists():
+                for c_file in conc_dir.glob("*.md"):
+                    try:
+                        existing_concepts.append(VaultNote(
+                            filename=c_file.name,
+                            folder="Concepts",
+                            title=c_file.stem.replace("_", " ").title(),
+                            content=c_file.read_text(encoding="utf-8"),
+                            note_type="concept",
+                        ))
+                    except Exception:
+                        continue
+
+        target_docs = documents if overwrite or not existing_concepts else new_docs
+        if target_docs:
+            fresh_concepts = self._generate_atomic_concepts(target_docs, lit_notes)
+        else:
+            fresh_concepts = []
+
+        concept_map = {c.filename.lower(): c for c in existing_concepts}
+        for fc in fresh_concepts:
+            concept_map[fc.filename.lower()] = fc
+        concept_notes = list(concept_map.values())
 
         # Step 3: Generate Map of Content (MOC / Index)
         index_note = self._generate_moc(documents, lit_notes, concept_notes)
@@ -105,6 +211,7 @@ title: "{sanitized_title}"
 type: literature-note
 date_imported: "{datetime.now().strftime('%Y-%m-%d')}"
 source_file: "{doc.file_name}"
+file_hash: "{doc.file_hash}"
 page_count: {doc.page_count}
 tags:
   - literature

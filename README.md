@@ -1,4 +1,4 @@
-# AI PDF Q&A and Comparison (ai-pdf-qa)
+# AI PDF Q&A and Comparison
 
 > A modular application that extracts text from single or multiple PDF documents and provides conversational question answering, cross-document comparison, and synthesis using **Google Gemini** and **LangChain**, available via both **CLI** and a **Streamlit Web UI**.
 

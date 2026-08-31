@@ -19,8 +19,8 @@ from chat_agent import PDFChatAgent
 st.set_page_config(
     page_title="Folio · Belge Araştırma",
     page_icon="📚",
-    layout="centered",
-    initial_sidebar_state="collapsed",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 # -----------------------------------------------------------------------------
@@ -117,19 +117,25 @@ CUSTOM_CSS = f"""
     transition: background-color 0.25s ease, color 0.25s ease;
 }}
 
-/* Streamlit chrome cleanup */
-header[data-testid="stHeader"] {{
-    background: transparent;
-}}
-div[data-testid="stToolbar"] {{
-    display: none;
-}}
+/* Main container sizing */
+.main .block-container {
+    max-width: 860px;
+    padding-top: var(--space-24, 24px);
+    padding-bottom: var(--space-64);
+    margin: 0 auto;
+}
 
-/* Sidebar */
-section[data-testid="stSidebar"] {{
+/* Sidebar styling - clearly distinguished */
+section[data-testid="stSidebar"] {
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
-}}
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
+}
+
+section[data-testid="stSidebar"] .block-container {
+    padding-top: var(--space-32);
+    padding-bottom: var(--space-32);
+}
 
 /* Top Navigation Masthead */
 .masthead {{
@@ -626,15 +632,3 @@ else:
                 except Exception as e:
                     st.error(f"Bir hata oluştu: {e}")
 
-# -----------------------------------------------------------------------------
-# 8. MINIMAL FOOTER
-# -----------------------------------------------------------------------------
-st.markdown(
-    """
-    <div class="simple-footer">
-        <span>Folio · Kişisel Belge Araştırma Asistanı</span>
-        <span>Antique White &amp; Dark Blue</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)

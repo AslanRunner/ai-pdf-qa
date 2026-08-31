@@ -10,6 +10,7 @@ Design Philosophy:
 - Full Second Brain & Obsidian Zettelkasten Synthesizer (Literature Notes, Atomic Concepts, Map of Content)
 """
 
+import hashlib
 from datetime import datetime
 from pathlib import Path
 import streamlit as st
@@ -808,17 +809,18 @@ with st.sidebar:
         else:
             with st.spinner("Reading and indexing documents..."):
                 docs: list[PDFDocument] = []
-                seen_hashes = {d.file_hash for d in st.session_state.documents if d.file_hash}
+                seen_hashes = {getattr(d, "file_hash", "") or hashlib.sha256(d.content.encode("utf-8")).hexdigest()[:16] for d in st.session_state.documents}
                 seen_names = {d.file_name for d in st.session_state.documents}
                 skipped_names = []
 
                 for f in uploaded_files:
                     try:
                         doc = PDFExtractor.extract_stream(f, file_name=f.name)
-                        if doc.file_hash in seen_hashes or doc.file_name in seen_names:
+                        doc_hash = getattr(doc, "file_hash", "") or hashlib.sha256(doc.content.encode("utf-8")).hexdigest()[:16]
+                        if doc_hash in seen_hashes or doc.file_name in seen_names:
                             skipped_names.append(doc.file_name)
                             continue
-                        seen_hashes.add(doc.file_hash)
+                        seen_hashes.add(doc_hash)
                         seen_names.add(doc.file_name)
                         docs.append(doc)
                     except Exception as e:
@@ -956,8 +958,9 @@ else:
     already_indexed_count = 0
     for doc in st.session_state.documents:
         clean_name = Path(doc.file_name).stem
+        doc_hash = getattr(doc, "file_hash", "") or hashlib.sha256(doc.content.encode("utf-8")).hexdigest()[:16]
         in_vault = (
-            (doc.file_hash and doc.file_hash in vault_catalog)
+            (doc_hash and doc_hash in vault_catalog)
             or clean_name.lower() in vault_catalog
             or doc.file_name.lower() in vault_catalog
         )
@@ -976,7 +979,7 @@ else:
                         <span class="workbench-doc-title">{doc.file_name}</span>
                         {badge}
                     </div>
-                    <span class="workbench-doc-meta">{doc.page_count} {'page' if doc.page_count == 1 else 'pages'} · {doc.char_count:,} chars · #{doc.file_hash[:6] if doc.file_hash else 'pdf'}</span>
+                    <span class="workbench-doc-meta">{doc.page_count} {'page' if doc.page_count == 1 else 'pages'} · {doc.char_count:,} chars · #{doc_hash[:6]}</span>
                 </div>
             </div>
             """

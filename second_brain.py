@@ -131,10 +131,12 @@ class SecondBrainSynthesizer:
 
         for doc in documents:
             clean_name = Path(doc.file_name).stem
+            import hashlib
+            doc_hash = getattr(doc, "file_hash", "") or hashlib.sha256(doc.content.encode("utf-8")).hexdigest()[:16]
             existing_entry = None
             if not overwrite and catalog:
-                if doc.file_hash and doc.file_hash in catalog:
-                    existing_entry = catalog[doc.file_hash]
+                if doc_hash and doc_hash in catalog:
+                    existing_entry = catalog[doc_hash]
                 elif clean_name.lower() in catalog:
                     existing_entry = catalog[clean_name.lower()]
                 elif doc.file_name.lower() in catalog:
@@ -195,6 +197,8 @@ class SecondBrainSynthesizer:
         """Generate an Obsidian Literature Note with YAML frontmatter, summary, quotes, and wikilinks."""
         clean_name = Path(doc.file_name).stem
         sanitized_title = clean_name.replace("_", " ").replace("-", " ").title()
+        import hashlib
+        doc_hash = getattr(doc, "file_hash", "") or hashlib.sha256(doc.content.encode("utf-8")).hexdigest()[:16]
 
         prompt = f"""You are a personal knowledge management (PKM) expert practicing Zettelkasten in Obsidian.
 Analyze the following document and write a comprehensive, professional Literature Note in Markdown.
@@ -211,7 +215,7 @@ title: "{sanitized_title}"
 type: literature-note
 date_imported: "{datetime.now().strftime('%Y-%m-%d')}"
 source_file: "{doc.file_name}"
-file_hash: "{doc.file_hash}"
+file_hash: "{doc_hash}"
 page_count: {doc.page_count}
 tags:
   - literature

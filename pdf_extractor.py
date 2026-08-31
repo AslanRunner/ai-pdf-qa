@@ -1,12 +1,11 @@
-"""PDF text extraction module supporting single and multi-PDF directory extraction."""
-
 import hashlib
+from dataclasses import dataclass
 from pathlib import Path
-from typing import NamedTuple
 from pypdf import PdfReader
 
 
-class PDFDocument(NamedTuple):
+@dataclass
+class PDFDocument:
     """Holds metadata and extracted text from a PDF file."""
     file_name: str
     file_path: str
@@ -14,6 +13,10 @@ class PDFDocument(NamedTuple):
     char_count: int
     content: str
     file_hash: str = ""
+
+    def __post_init__(self):
+        if not self.file_hash and self.content:
+            self.file_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()[:16]
 
 
 class PDFExtractor:

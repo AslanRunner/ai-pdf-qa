@@ -83,7 +83,7 @@ The application will open automatically at `http://localhost:8501`.
 
 ---
 
-## Running the Command-Line Tool (CLI)
+## Running the Command-Line Tool 
 
 Run via terminal:
 ```bash

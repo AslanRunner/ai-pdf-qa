@@ -253,26 +253,64 @@ div[data-testid="stFileUploaderFile"] svg {{
     fill: var(--text-main) !important;
 }}
 
-/* Chat Input Bar & Textarea */
+/* FIXED BOTTOM BAR CONTAINER - Matches canvas seamlessly */
+div[data-testid="stBottom"],
+div[data-testid="stBottom"] > div,
+div[data-testid="stBottomBlockContainer"],
+footer {{
+    background-color: var(--bg-canvas) !important;
+    background: var(--bg-canvas) !important;
+    border: none !important;
+    box-shadow: none !important;
+}}
+
+/* Chat Input Bar - Sleek Floating Pill */
 div[data-testid="stChatInput"] {{
+    max-width: 860px !important;
+    margin: 0 auto !important;
     background-color: var(--bg-surface) !important;
     border: 1px solid var(--border-strong) !important;
-    box-shadow: var(--shadow-soft);
+    border-radius: 28px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16) !important;
+    padding: 3px 12px !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}}
+
+div[data-testid="stChatInput"]:focus-within {{
+    border-color: var(--accent-brand) !important;
+    box-shadow: 0 0 0 1px var(--accent-brand), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
 }}
 
 div[data-testid="stChatInput"] textarea {{
     color: var(--text-main) !important;
     background-color: transparent !important;
     font-family: 'Source Sans 3', sans-serif !important;
-    font-size: 0.95rem;
+    font-size: 0.96rem !important;
+    line-height: 1.5 !important;
+    padding: 8px 4px !important;
 }}
 
 div[data-testid="stChatInput"] textarea::placeholder {{
     color: var(--text-muted) !important;
+    font-style: normal !important;
+}}
+
+div[data-testid="stChatInput"] button {{
+    background-color: var(--accent-brand) !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    margin: auto 0 !important;
+    border: none !important;
+    transition: background-color 0.2s ease !important;
+}}
+
+div[data-testid="stChatInput"] button:hover {{
+    background-color: var(--accent-brand-hover) !important;
 }}
 
 div[data-testid="stChatInput"] button svg {{
-    fill: var(--text-main) !important;
+    fill: var(--accent-brand-text) !important;
 }}
 
 /* Top Navigation Masthead */
@@ -337,12 +375,12 @@ div[data-testid="stChatInput"] button svg {{
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-8);
-    padding: var(--space-12, 12px) var(--space-16);
+    padding: 8px 14px;
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: var(--space-4);
+    border-radius: 8px;
     margin-bottom: var(--space-24, 24px);
-    box-shadow: var(--shadow-soft);
+    font-size: 0.85rem;
 }}
 
 .doc-chip {{
@@ -414,20 +452,42 @@ div.stButton > button[kind="primary"]:hover span {{
 div.stChatMessage {{
     background-color: var(--bubble-ai) !important;
     border: 1px solid var(--bubble-ai-border) !important;
-    border-radius: var(--space-4);
-    padding: var(--space-16);
-    margin-bottom: var(--space-16);
-    box-shadow: var(--shadow-soft);
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 18px !important;
+    box-shadow: var(--shadow-soft) !important;
+    line-height: 1.65 !important;
 }}
 
 div.stChatMessage[data-testid="stChatMessageUser"] {{
     background-color: var(--bubble-user) !important;
     border-color: var(--bubble-user-border) !important;
+    border-radius: 14px 14px 4px 14px !important;
+    max-width: 88% !important;
+    margin-left: auto !important;
 }}
 
 div.stChatMessage[data-testid="stChatMessageAssistant"] {{
     background-color: var(--bubble-ai) !important;
     border-color: var(--bubble-ai-border) !important;
+    border-radius: 14px 14px 14px 4px !important;
+    max-width: 100% !important;
+}}
+
+div.stChatMessage div[data-testid="stChatMessageAvatar"] {{
+    background-color: var(--bg-subtle) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}}
+
+div.stChatMessage[data-testid="stChatMessageUser"] div[data-testid="stChatMessageAvatar"] {{
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-strong) !important;
 }}
 
 div[data-testid="stMarkdownContainer"] p,
@@ -779,7 +839,9 @@ else:
 
     # Render Conversation History
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
+        role = message["role"]
+        avatar = "👤" if role == "user" else "📖"
+        with st.chat_message(role, avatar=avatar):
             st.markdown(clean_text_for_display(message["content"]))
 
     # Prompt Input
@@ -790,10 +852,10 @@ else:
 
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar="👤"):
             st.markdown(prompt)
 
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="📖"):
             with st.spinner("Belgeler inceleniyor..."):
                 try:
                     response = st.session_state.agent.ask(prompt)

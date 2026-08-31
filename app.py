@@ -118,24 +118,24 @@ CUSTOM_CSS = f"""
 }}
 
 /* Main container sizing */
-.main .block-container {
+.main .block-container {{
     max-width: 860px;
     padding-top: var(--space-24, 24px);
     padding-bottom: var(--space-64);
     margin: 0 auto;
-}
+}}
 
 /* Sidebar styling - clearly distinguished */
-section[data-testid="stSidebar"] {
+section[data-testid="stSidebar"] {{
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
-}
+}}
 
-section[data-testid="stSidebar"] .block-container {
+section[data-testid="stSidebar"] .block-container {{
     padding-top: var(--space-32);
     padding-bottom: var(--space-32);
-}
+}}
 
 /* Top Navigation Masthead */
 .masthead {{

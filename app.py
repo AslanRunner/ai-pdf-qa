@@ -5,6 +5,8 @@ Design Philosophy:
 - Restrained, authentic human craftsmanship (no AI badges, no robotic telemetry boxes, no cheesy clichés)
 - Typography: Newsreader (Editorial Serif) + Source Sans 3 (Body) + IBM Plex Mono (Subtle metadata)
 - Powers of two spacing (2, 4, 8, 16, 32, 64, 128)
+- Generous desktop layout (1040px) with dedicated Research Workbench
+- Clean sliding toggle for dark mode & single-pill chat input without outer rings
 """
 
 from pathlib import Path
@@ -123,10 +125,10 @@ body, .stApp, p, span, label, li, td, th, h1, h2, h3, h4, h5, h6 {{
     transition: background-color 0.25s ease, color 0.25s ease;
 }}
 
-/* Main container sizing */
+/* Main container sizing - Generous desktop width */
 .main .block-container {{
-    max-width: 860px;
-    padding-top: var(--space-24, 24px);
+    max-width: 1040px;
+    padding-top: var(--space-16);
     padding-bottom: var(--space-64);
     margin: 0 auto;
 }}
@@ -164,18 +166,19 @@ div[data-testid="stWidgetLabel"] span {{
     font-size: 0.9rem !important;
 }}
 
-/* Radio button text (Theme switcher) */
-div[data-testid="stRadio"] p,
-div[data-testid="stRadio"] span,
-div[data-testid="stRadio"] label {{
-    color: var(--text-main) !important;
-    font-family: 'IBM Plex Mono', monospace !important;
-    font-size: 0.78rem !important;
+/* Sliding Toggle Switch Styling */
+div[data-testid="stToggle"] {{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 4px;
 }}
 
-div[data-testid="stRadio"] div[role="radiogroup"] label div:first-child {{
-    border-color: var(--border-strong) !important;
-    background-color: var(--bg-surface) !important;
+div[data-testid="stToggle"] label p {{
+    font-family: 'IBM Plex Mono', monospace !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    color: var(--text-main) !important;
 }}
 
 /* Selectbox / Dropdown (Model selector) */
@@ -264,28 +267,39 @@ footer {{
     box-shadow: none !important;
 }}
 
-/* Chat Input Bar - Sleek Floating Pill */
+/* OUTER CHAT INPUT WRAPPER - Completely transparent, NO borders, NO double rings */
 div[data-testid="stChatInput"] {{
-    max-width: 860px !important;
+    max-width: 1040px !important;
     margin: 0 auto !important;
-    background-color: var(--bg-surface) !important;
-    border: 1px solid var(--border-strong) !important;
-    border-radius: 28px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16) !important;
-    padding: 3px 12px !important;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }}
 
-div[data-testid="stChatInput"]:focus-within {{
+/* INNER INPUT WRAPPER - The single, clean rounded pill */
+div[data-testid="stChatInput"] > div,
+div[data-testid="stChatInput"] form {{
+    background-color: var(--bg-surface) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 26px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16) !important;
+    padding: 2px 10px !important;
+    transition: all 0.2s ease !important;
+}}
+
+div[data-testid="stChatInput"] > div:focus-within,
+div[data-testid="stChatInput"] form:focus-within {{
     border-color: var(--accent-brand) !important;
-    box-shadow: 0 0 0 1px var(--accent-brand), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 0 0 0 1px var(--accent-brand), 0 6px 24px rgba(0, 0, 0, 0.22) !important;
 }}
 
 div[data-testid="stChatInput"] textarea {{
     color: var(--text-main) !important;
     background-color: transparent !important;
     font-family: 'Source Sans 3', sans-serif !important;
-    font-size: 0.96rem !important;
+    font-size: 0.95rem !important;
     line-height: 1.5 !important;
     padding: 8px 4px !important;
 }}
@@ -302,6 +316,9 @@ div[data-testid="stChatInput"] button {{
     height: 32px !important;
     margin: auto 0 !important;
     border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     transition: background-color 0.2s ease !important;
 }}
 
@@ -321,7 +338,7 @@ div[data-testid="stChatInput"] button svg {{
     padding-top: var(--space-8);
     padding-bottom: var(--space-16);
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: var(--space-32);
+    margin-bottom: var(--space-24, 24px);
 }}
 
 .masthead-brand {{
@@ -333,7 +350,7 @@ div[data-testid="stChatInput"] button svg {{
 .masthead-logo {{
     font-family: 'Newsreader', Georgia, serif;
     font-weight: 800;
-    font-size: 1.85rem;
+    font-size: 1.9rem;
     letter-spacing: -0.03em;
     color: var(--text-main) !important;
     text-decoration: none;
@@ -341,12 +358,12 @@ div[data-testid="stChatInput"] button svg {{
 
 .masthead-subtitle {{
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: var(--text-muted) !important;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
 }}
 
-/* Hero section */
+/* Hero section (when empty) */
 .hero-box {{
     margin-bottom: var(--space-32);
 }}
@@ -354,7 +371,7 @@ div[data-testid="stChatInput"] button svg {{
 .hero-heading {{
     font-family: 'Newsreader', Georgia, serif;
     font-weight: 700;
-    font-size: 2.5rem;
+    font-size: 2.6rem;
     line-height: 1.15;
     letter-spacing: -0.02em;
     color: var(--text-main) !important;
@@ -365,39 +382,89 @@ div[data-testid="stChatInput"] button svg {{
     font-size: 1.08rem;
     line-height: 1.55;
     color: var(--text-secondary) !important;
-    max-width: 620px;
+    max-width: 660px;
     margin: 0;
 }}
 
-/* Document Bar (when documents are active) */
-.doc-bar {{
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-8);
-    padding: 8px 14px;
+/* WORKBENCH PANEL & DOSSIERS */
+.workbench-panel {{
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: var(--space-24, 24px);
-    font-size: 0.85rem;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: var(--space-16);
+    box-shadow: var(--shadow-soft);
 }}
 
-.doc-chip {{
-    display: inline-flex;
+.workbench-header {{
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: var(--space-4);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.76rem;
-    background-color: var(--bg-subtle);
-    color: var(--text-main) !important;
-    padding: var(--space-4) var(--space-8);
-    border: 1px solid var(--border-color);
-    border-radius: var(--space-2);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
 }}
 
-.doc-chip small {{
+.workbench-label {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     color: var(--text-muted) !important;
+    text-transform: uppercase;
+}}
+
+.workbench-model-tag {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent-brand) !important;
+    background-color: var(--bg-subtle);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}}
+
+.workbench-docs-grid {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}}
+
+.workbench-doc-chip {{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 14px;
+    min-width: 220px;
+}}
+
+.workbench-doc-icon {{
+    font-size: 1.2rem;
+}}
+
+.workbench-doc-info {{
+    display: flex;
+    flex-direction: column;
+}}
+
+.workbench-doc-title {{
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-main) !important;
+}}
+
+.workbench-doc-meta {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted) !important;
+}}
+
+.quick-actions-bar {{
+    margin-bottom: 24px;
 }}
 
 /* Button styling */
@@ -570,16 +637,6 @@ div.stChatMessage th {{
     margin: 0 auto var(--space-24, 24px) auto;
 }}
 
-/* Suggestion pills */
-.suggestion-header {{
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-muted) !important;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: var(--space-8);
-}}
-
 /* Alerts / Warnings / Infos */
 div[data-testid="stAlert"] {{
     background-color: var(--bg-subtle) !important;
@@ -591,7 +648,6 @@ div[data-testid="stAlert"] p,
 div[data-testid="stAlert"] span {{
     color: var(--text-main) !important;
 }}
-
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -631,7 +687,7 @@ def load_local_samples() -> list[PDFDocument]:
 
 
 # -----------------------------------------------------------------------------
-# 5. TOP MASTHEAD & THEME SWITCHER
+# 5. TOP MASTHEAD & SLIDING THEME SWITCHER
 # -----------------------------------------------------------------------------
 col_brand, col_theme = st.columns([3, 1])
 with col_brand:
@@ -639,27 +695,19 @@ with col_brand:
         """
         <div class="masthead-brand">
             <span class="masthead-logo">Folio</span>
-            <span class="masthead-subtitle">/ Belge Araştırma</span>
+            <span class="masthead-subtitle">/ Belge Araştırma &amp; Analiz</span>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
 with col_theme:
-    # Human-friendly theme switch
-    theme_selected = st.radio(
-        "Tema",
-        ["Açık", "Koyu"],
-        horizontal=True,
-        index=1 if is_dark else 0,
-        label_visibility="collapsed",
-    )
-    new_mode = "dark" if theme_selected == "Koyu" else "light"
+    # Modern sliding toggle switch
+    is_dark_toggle = st.toggle("🌙 Koyu Mod", value=is_dark)
+    new_mode = "dark" if is_dark_toggle else "light"
     if new_mode != st.session_state.theme_mode:
         st.session_state.theme_mode = new_mode
         st.rerun()
-
-st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 6. SIDEBAR (DOCUMENTS & SETTINGS)
@@ -808,34 +856,55 @@ if not st.session_state.processed:
                 st.rerun()
 
 else:
-    # Active document status bar
+    # Rich, well-proportioned Research Desk header (eliminates the empty top void)
     doc_chips_html = "".join(
-        f'<span class="doc-chip">📄 {doc.file_name} <small>({doc.page_count} sayfa)</small></span>'
+        f"""
+        <div class="workbench-doc-chip">
+            <span class="workbench-doc-icon">📄</span>
+            <div class="workbench-doc-info">
+                <span class="workbench-doc-title">{doc.file_name}</span>
+                <span class="workbench-doc-meta">{doc.page_count} sayfa · {doc.char_count:,} karakter</span>
+            </div>
+        </div>
+        """
         for doc in st.session_state.documents
     )
+
     st.markdown(
         f"""
-        <div class="doc-bar">
-            <span style="font-size: 0.85rem; font-weight: 600; margin-right: 4px;">Aktif Belgeler:</span>
-            {doc_chips_html}
+        <div class="workbench-panel">
+            <div class="workbench-header">
+                <span class="workbench-label">✦ İNCELENEN BELGELER ({len(st.session_state.documents)})</span>
+                <span class="workbench-model-tag">{st.session_state.selected_model}</span>
+            </div>
+            <div class="workbench-docs-grid">
+                {doc_chips_html}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # If no messages yet, show subtle suggestion chips
-    if not st.session_state.messages:
-        st.markdown('<div class="suggestion-header">Örnek İpuçları</div>', unsafe_allow_html=True)
-        col_q1, col_q2, col_q3 = st.columns(3)
-        with col_q1:
-            if st.button("📌 Belgelerin ana fikrini özetle", use_container_width=True):
-                st.session_state.pending_prompt = "Yüklenen belgelerin ana konusunu ve önemli sonuçlarını özetle."
-        with col_q2:
-            if st.button("⚖️ Belgeleri tabloyla karşılaştır", use_container_width=True):
-                st.session_state.pending_prompt = "Belgeleri temel kriterler, yöntemler ve bulgular açısından karşılaştıran bir tablo hazırla."
-        with col_q3:
-            if st.button("🔍 Sayısal verileri listele", use_container_width=True):
-                st.session_state.pending_prompt = "Belgelerdeki tüm sayısal verileri, istatistikleri ve yüzdeleri çıkar."
+    # Persistent, elegant quick action protocol pills
+    st.markdown('<div class="quick-actions-bar">', unsafe_allow_html=True)
+    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
+    with col_q1:
+        if st.button("📌 Ana Fikri Özetle", use_container_width=True):
+            st.session_state.pending_prompt = "Yüklenen belgelerin ana konusunu ve önemli sonuçlarını özetle."
+    with col_q2:
+        if st.button("⚖️ Tabloyla Karşılaştır", use_container_width=True):
+            st.session_state.pending_prompt = "Belgeleri temel kriterler, yöntemler ve bulgular açısından karşılaştıran bir tablo hazırla."
+    with col_q3:
+        if st.button("🔍 Metrikleri Listele", use_container_width=True):
+            st.session_state.pending_prompt = "Belgelerdeki tüm sayısal verileri, istatistikleri ve yüzdeleri çıkar."
+    with col_q4:
+        if st.button("🧹 Sohbeti Temizle", use_container_width=True):
+            st.session_state.messages = []
+            if st.session_state.agent:
+                st.session_state.agent.reset()
+                st.session_state.agent.set_documents(st.session_state.documents)
+            st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Render Conversation History
     for message in st.session_state.messages:
@@ -844,7 +913,7 @@ else:
         with st.chat_message(role, avatar=avatar):
             st.markdown(clean_text_for_display(message["content"]))
 
-    # Prompt Input
+    # Prompt Input (Single pill with zero outer ring)
     prompt = st.chat_input("Belgelerle ilgili bir soru sorun...")
     if st.session_state.pending_prompt:
         prompt = st.session_state.pending_prompt
@@ -864,4 +933,3 @@ else:
                     st.session_state.messages.append({"role": "assistant", "content": clean_response})
                 except Exception as e:
                     st.error(f"Bir hata oluştu: {e}")
-

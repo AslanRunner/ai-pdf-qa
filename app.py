@@ -1,4 +1,4 @@
-"""Streamlit Web Application for Human-Crafted Multi-PDF Research.
+"""Streamlit Web Application for Human-Crafted Multi-PDF Research & Second Brain Synthesis.
 
 Design Philosophy:
 - Antique White & Deep Dark Blue palette with full Light & Dark mode support
@@ -7,13 +7,16 @@ Design Philosophy:
 - Powers of two spacing (2, 4, 8, 16, 32, 64, 128)
 - Generous desktop layout (1040px) with dedicated Research Workbench
 - Clean sliding toggle for dark mode & single-pill chat input without outer rings
+- Full Second Brain & Obsidian Zettelkasten Synthesizer (Literature Notes, Atomic Concepts, Map of Content)
 """
 
+from datetime import datetime
 from pathlib import Path
 import streamlit as st
 from config import get_api_key
 from pdf_extractor import PDFExtractor, PDFDocument
 from chat_agent import PDFChatAgent
+from second_brain import SecondBrainSynthesizer, VaultPackage, VaultNote
 
 # -----------------------------------------------------------------------------
 # 1. PAGE SETUP
@@ -51,6 +54,9 @@ if "temperature" not in st.session_state:
 
 if "pending_prompt" not in st.session_state:
     st.session_state.pending_prompt = None
+
+if "vault_package" not in st.session_state:
+    st.session_state.vault_package = None
 
 # -----------------------------------------------------------------------------
 # 3. DYNAMIC STYLES (LIGHT / DARK THEME IN ANTIQUE WHITE & DARK BLUE)
@@ -467,6 +473,75 @@ div[data-testid="stChatInput"] button svg {{
     margin-bottom: 24px;
 }}
 
+/* TABS STYLING */
+div[data-baseweb="tab-list"] {{
+    background-color: transparent !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 0 !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+}}
+
+button[data-baseweb="tab"] {{
+    font-family: 'Source Sans 3', sans-serif !important;
+    font-size: 0.98rem !important;
+    font-weight: 600 !important;
+    color: var(--text-muted) !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 10px 18px !important;
+    transition: all 0.2s ease !important;
+}}
+
+button[data-baseweb="tab"][aria-selected="true"] {{
+    color: var(--text-main) !important;
+    border-bottom: 2px solid var(--accent-brand) !important;
+}}
+
+/* SECOND BRAIN HERO & CARDS */
+.second-brain-banner {{
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+}}
+
+.second-brain-title {{
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--text-main) !important;
+    margin: 0 0 6px 0;
+}}
+
+.second-brain-desc {{
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--text-secondary) !important;
+    margin-bottom: 16px;
+}}
+
+.vault-metrics-row {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 12px 18px;
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}}
+
+.vault-metric-item {{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--text-main) !important;
+}}
+
 /* Button styling */
 div.stButton > button {{
     font-family: 'Source Sans 3', sans-serif;
@@ -752,6 +827,7 @@ with st.sidebar:
                     st.session_state.agent = agent
                     st.session_state.processed = True
                     st.session_state.messages = []
+                    st.session_state.vault_package = None
                     st.rerun()
 
     if sample_clicked:
@@ -769,6 +845,7 @@ with st.sidebar:
                 st.session_state.agent = agent
                 st.session_state.processed = True
                 st.session_state.messages = []
+                st.session_state.vault_package = None
                 st.rerun()
             else:
                 st.error("No sample documents found in 'documents/' directory.")
@@ -855,10 +932,11 @@ if not st.session_state.processed:
                 st.session_state.agent = agent
                 st.session_state.processed = True
                 st.session_state.messages = []
+                st.session_state.vault_package = None
                 st.rerun()
 
 else:
-    # Rich, well-proportioned Research Desk header (eliminates the empty top void)
+    # Rich Research Desk Header (Persistent across views)
     doc_chips_html = "".join(
         f"""
         <div class="workbench-doc-chip">
@@ -887,51 +965,187 @@ else:
         unsafe_allow_html=True,
     )
 
-    # Persistent, elegant quick action protocol pills
-    st.markdown('<div class="quick-actions-bar">', unsafe_allow_html=True)
-    col_q1, col_q2, col_q3, col_q4 = st.columns(4)
-    with col_q1:
-        if st.button("📌 Executive Summary", use_container_width=True):
-            st.session_state.pending_prompt = "Provide a high-impact executive summary of the loaded documents, detailing primary objectives, key findings, and final conclusions."
-    with col_q2:
-        if st.button("⚖️ Comparative Table", use_container_width=True):
-            st.session_state.pending_prompt = "Construct a comprehensive Markdown comparison table evaluating the documents across key parameters, methodology, datasets, and outcomes."
-    with col_q3:
-        if st.button("🔍 Key Metrics & Data", use_container_width=True):
-            st.session_state.pending_prompt = "Extract and list all quantitative data, percentages, statistical metrics, and numerical benchmarks reported across the documents."
-    with col_q4:
-        if st.button("🧹 Clear Conversation", use_container_width=True):
-            st.session_state.messages = []
-            if st.session_state.agent:
-                st.session_state.agent.reset()
-                st.session_state.agent.set_documents(st.session_state.documents)
-            st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    # WORKSPACE VIEW TABS (Document Dialogue vs Second Brain Synthesizer)
+    tab_dialogue, tab_brain = st.tabs(["💬 Document Dialogue", "🧠 Second Brain / Obsidian Synthesizer"])
 
-    # Render Conversation History
-    for message in st.session_state.messages:
-        role = message["role"]
-        avatar = "👤" if role == "user" else "📖"
-        with st.chat_message(role, avatar=avatar):
-            st.markdown(clean_text_for_display(message["content"]))
+    # -------------------------------------------------------------------------
+    # TAB 1: DOCUMENT DIALOGUE
+    # -------------------------------------------------------------------------
+    with tab_dialogue:
+        # Quick Action Protocol Pills
+        st.markdown('<div class="quick-actions-bar">', unsafe_allow_html=True)
+        col_q1, col_q2, col_q3, col_q4 = st.columns(4)
+        with col_q1:
+            if st.button("📌 Executive Summary", use_container_width=True):
+                st.session_state.pending_prompt = "Provide a high-impact executive summary of the loaded documents, detailing primary objectives, key findings, and final conclusions."
+        with col_q2:
+            if st.button("⚖️ Comparative Table", use_container_width=True):
+                st.session_state.pending_prompt = "Construct a comprehensive Markdown comparison table evaluating the documents across key parameters, methodology, datasets, and outcomes."
+        with col_q3:
+            if st.button("🔍 Key Metrics & Data", use_container_width=True):
+                st.session_state.pending_prompt = "Extract and list all quantitative data, percentages, statistical metrics, and numerical benchmarks reported across the documents."
+        with col_q4:
+            if st.button("🧹 Clear Conversation", use_container_width=True):
+                st.session_state.messages = []
+                if st.session_state.agent:
+                    st.session_state.agent.reset()
+                    st.session_state.agent.set_documents(st.session_state.documents)
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # Prompt Input (Single pill with zero outer ring)
-    prompt = st.chat_input("Ask a question about your documents...")
-    if st.session_state.pending_prompt:
-        prompt = st.session_state.pending_prompt
-        st.session_state.pending_prompt = None
+        # Render Conversation History
+        for message in st.session_state.messages:
+            role = message["role"]
+            avatar = "👤" if role == "user" else "📖"
+            with st.chat_message(role, avatar=avatar):
+                st.markdown(clean_text_for_display(message["content"]))
 
-    if prompt:
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user", avatar="👤"):
-            st.markdown(prompt)
+        # Prompt Input (Single pill with zero outer ring)
+        prompt = st.chat_input("Ask a question about your documents...")
+        if st.session_state.pending_prompt:
+            prompt = st.session_state.pending_prompt
+            st.session_state.pending_prompt = None
 
-        with st.chat_message("assistant", avatar="📖"):
-            with st.spinner("Analyzing documents and synthesizing response..."):
-                try:
-                    response = st.session_state.agent.ask(prompt)
-                    clean_response = clean_text_for_display(response)
-                    st.markdown(clean_response)
-                    st.session_state.messages.append({"role": "assistant", "content": clean_response})
-                except Exception as e:
-                    st.error(f"An error occurred while generating the answer: {e}")
+        if prompt:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user", avatar="👤"):
+                st.markdown(prompt)
+
+            with st.chat_message("assistant", avatar="📖"):
+                with st.spinner("Analyzing documents and synthesizing response..."):
+                    try:
+                        response = st.session_state.agent.ask(prompt)
+                        clean_response = clean_text_for_display(response)
+                        st.markdown(clean_response)
+                        st.session_state.messages.append({"role": "assistant", "content": clean_response})
+                    except Exception as e:
+                        st.error(f"An error occurred while generating the answer: {e}")
+
+    # -------------------------------------------------------------------------
+    # TAB 2: SECOND BRAIN / OBSIDIAN SYNTHESIZER
+    # -------------------------------------------------------------------------
+    with tab_brain:
+        if st.session_state.vault_package is None:
+            st.markdown(
+                """
+                <div class="second-brain-banner">
+                    <h2 class="second-brain-title">Automated Obsidian Knowledge Graph &amp; Zettelkasten Synthesizer</h2>
+                    <p class="second-brain-desc">
+                        Instead of reading in isolation, convert your document corpus into an interconnected personal knowledge base:
+                        <br>• <strong>Literature Notes:</strong> Deep dossiers with YAML frontmatter, core thesis, and verbatim quotes.
+                        <br>• <strong>Atomic Concept Notes:</strong> Standalone mental models, frameworks, and techniques with bi-directional <code>[[wikilinks]]</code>.
+                        <br>• <strong>Map of Content (MOC):</strong> Central router tying all documents and concepts into a unified graph.
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            col_s1, col_s2, col_s3 = st.columns([1, 2, 1])
+            with col_s2:
+                if st.button("⚡ Synthesize Obsidian Vault Now", type="primary", use_container_width=True):
+                    with st.spinner("Distilling documents into atomic concept notes and literature dossiers..."):
+                        try:
+                            synthesizer = SecondBrainSynthesizer(
+                                api_key=get_api_key(),
+                                model_name=st.session_state.selected_model,
+                                temperature=st.session_state.temperature,
+                            )
+                            vault = synthesizer.synthesize_vault(st.session_state.documents)
+                            st.session_state.vault_package = vault
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Failed to synthesize vault: {e}")
+
+        else:
+            vault: VaultPackage = st.session_state.vault_package
+
+            # Metrics bar
+            st.markdown(
+                f"""
+                <div class="vault-metrics-row">
+                    <span class="vault-metric-item">✨ <strong>Vault Synthesized</strong> ({vault.created_at})</span>
+                    <span class="vault-metric-item">📑 {len(vault.literature_notes)} Literature Notes</span>
+                    <span class="vault-metric-item">🧩 {len(vault.concept_notes)} Atomic Concepts</span>
+                    <span class="vault-metric-item">🗺️ 1 Map of Content</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            # Action bar: Download ZIP & Re-synthesize
+            col_act1, col_act2 = st.columns([2, 1])
+            with col_act1:
+                zip_bytes = SecondBrainSynthesizer.create_vault_zip(vault)
+                st.download_button(
+                    label="📦 Download Ready-to-Use Obsidian Vault (.zip)",
+                    data=zip_bytes,
+                    file_name=f"Obsidian_Vault_{datetime.now().strftime('%Y%m%d_%H%M')}.zip",
+                    mime="application/zip",
+                    type="primary",
+                    use_container_width=True,
+                )
+            with col_act2:
+                if st.button("🔄 Re-synthesize Vault", use_container_width=True):
+                    with st.spinner("Re-generating vault..."):
+                        try:
+                            synthesizer = SecondBrainSynthesizer(
+                                api_key=get_api_key(),
+                                model_name=st.session_state.selected_model,
+                                temperature=st.session_state.temperature,
+                            )
+                            new_vault = synthesizer.synthesize_vault(st.session_state.documents)
+                            st.session_state.vault_package = new_vault
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Re-synthesis failed: {e}")
+
+            # Direct Export Expander
+            with st.expander("💾 Direct Export to Local Obsidian Vault Directory"):
+                st.markdown("Specify your local Obsidian Vault folder path to write all notes directly to disk:")
+                target_path = st.text_input("Obsidian Vault Folder Path", placeholder="e.g. C:/Users/USER/Documents/MyObsidianVault")
+                if st.button("Export Directly to Directory"):
+                    if not target_path.strip():
+                        st.warning("Please enter a valid directory path.")
+                    else:
+                        try:
+                            saved = SecondBrainSynthesizer.export_to_directory(vault, target_path.strip())
+                            st.success(f"Successfully exported {len(saved)} Markdown notes into '{target_path}'!")
+                        except Exception as exp_err:
+                            st.error(f"Export error: {exp_err}")
+
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+
+            # Vault Note Explorer (Tabs for MOC, Literature Notes, Concept Notes)
+            vault_tabs = st.tabs(["🗺️ Map of Content", f"📑 Literature Notes ({len(vault.literature_notes)})", f"🧩 Atomic Concepts ({len(vault.concept_notes)})"])
+
+            # 1. Map of Content
+            with vault_tabs[0]:
+                if vault.index_note:
+                    st.markdown(vault.index_note.content)
+                    with st.expander("View Raw Markdown (_Index_MOC.md)"):
+                        st.code(vault.index_note.content, language="markdown")
+
+            # 2. Literature Notes
+            with vault_tabs[1]:
+                if vault.literature_notes:
+                    lit_names = [n.title for n in vault.literature_notes]
+                    chosen_lit_title = st.selectbox("Select Literature Note", lit_names)
+                    selected_lit = next((n for n in vault.literature_notes if n.title == chosen_lit_title), vault.literature_notes[0])
+                    st.markdown(f"**Path in Vault:** `{selected_lit.relative_path}`")
+                    st.markdown("---")
+                    st.markdown(selected_lit.content)
+                    with st.expander(f"View Raw Markdown ({selected_lit.filename})"):
+                        st.code(selected_lit.content, language="markdown")
+
+            # 3. Atomic Concepts
+            with vault_tabs[2]:
+                if vault.concept_notes:
+                    concept_titles = [c.title for c in vault.concept_notes]
+                    chosen_concept = st.selectbox("Select Atomic Concept", concept_titles)
+                    selected_concept = next((c for c in vault.concept_notes if c.title == chosen_concept), vault.concept_notes[0])
+                    st.markdown(f"**Path in Vault:** `{selected_concept.relative_path}`")
+                    st.markdown("---")
+                    st.markdown(selected_concept.content)
+                    with st.expander(f"View Raw Markdown ({selected_concept.filename})"):
+                        st.code(selected_concept.content, language="markdown")
